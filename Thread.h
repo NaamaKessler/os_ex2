@@ -4,18 +4,18 @@
  *
  */
 
-// todo:
-/*
- * _status - 1 for ready?
- *  - dependency queue
-*/
-
 // ------------------------------ includes ------------------------------
 
 #ifndef EX2_THREAD_H
 #define EX2_THREAD_H
 #define STACK_SIZE 4096
 #include <stdio.h>
+
+// status:
+#define READY 1
+#define RUNNING 2
+#define BLOCKED 3
+
 // ------------------------------- methods ------------------------------
 using namespace std;
 
@@ -33,11 +33,32 @@ public:
      */
     int getId() const;
 
+    /**
+     * Set thread status
+     * @param status - READY/RUNNING/BLOCKED
+     * @return 0 - success, -1 - failure
+     */
+    int setStatus(int status);
+
+    /**
+     *
+     * @param thread
+     * @return
+     */
+    int pushDependent(Thread *thread);
+
+    /**
+     *
+     * @param thread
+     * @return
+     */
+    thread* popDependent(Thread *thread);
+
 private:
-    int _tid; //thread ID
-    int _status; // todo
+    int _tid;
+    int _status;
     char _stack[STACK_SIZE];
-    queue _dependencyQueue;
+    queue<*Thread> _dependencyQueue;
 
 };
 
