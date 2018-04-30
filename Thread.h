@@ -9,15 +9,17 @@
 #ifndef EX2_THREAD_H
 #define EX2_THREAD_H
 #define STACK_SIZE 4096
-#include <stdio.h>
 
 // status:
 #define READY 1
 #define RUNNING 2
 #define BLOCKED 3
 
+
 // ------------------------------- methods ------------------------------
 using namespace std;
+
+
 
 class Thread
 {
