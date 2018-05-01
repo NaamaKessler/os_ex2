@@ -12,6 +12,7 @@
 
 #include <iostream>
 #include <queue>
+#include <csetjmp>
 
 // status:
 #define READY 1
@@ -66,6 +67,7 @@ private:
     char _stack[STACK_SIZE];
     vector<Thread*> _dependencyQueue;
     address_t _sp, _pc;
+    sigjmp_buf _contextBuf;
 
 };
 

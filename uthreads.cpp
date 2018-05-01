@@ -12,33 +12,70 @@
 #include "uthreads.h"
 #include "Thread.h"
 
+#define ERR_FUNC_FAIL "thread library error: "
+#define ERR_SYS_CALL "system error: "
+
 
 // ------------------------------- globals ------------------------------
 
-//todo: How to initialize inside init() but as globals?
-//Thread** buf[MAX_THREAD_NUM] = {};
-//static std::vector<Thread> readyBuf;
-//static int numThreads = 1;
-//static int currentThread = 0;
-//static int quant;
-
-std::vector<Thread*> buf;
+static std::vector<Thread*> buf;
 static std::vector<Thread*> readyBuf;
 static int numThreads;
 static int currentThreadId;
-struct itimerval timer;
+
+//timer globals:
+struct sigaction sa;
+static struct itimerval timer;
 
 // ---------- buf;--------------------- methods ------------------------------
 
 
-void schedualer(){
+void schedualer(int sig){
 
 }
 
-std::vector<Thread*> initBuffer() {
-    static std::vector<Thread*> buffer(MAX_THREAD_NUM);
-    return buffer;
 
+
+/**
+ * Initializes a buffer to contain all existing threads.
+ */
+int initBuffer() {
+    try {
+        buf = new std::vector(MAX_THREAD_NUM);
+    }
+    catch (std::bad_alloc& e){
+        std::cerr << ERR_SYS_CALL << "Memory allocation failed.\n";
+        return -1;
+    }
+    return 0;
+
+}
+
+/**
+ * Sets a virtual timer with the time interval quantum_usecs.
+ */
+int setTimer(int quantum_usecs) {
+
+    //set timer handler:
+    sa.sa_handler = &schedualer;
+    if (sigaction(SIGVTALRM, &sa, nullptr) < 0) {
+        std::cerr << ERR_SYS_CALL << "sigaction has failed.\n";     //todo: change.
+        return -1;
+    }
+
+    // Configure the timer to expire after quantum micro secs:
+    timer.it_value.tv_sec = 0;
+    timer.it_value.tv_usec = quantum_usecs;
+
+    // configure the timer to expire every quantum micro secs after that:
+    timer.it_interval.tv_sec = 0;
+    timer.it_interval.tv_usec = quantum_usecs;
+
+    // Start a virtual timer. It counts down whenever this process is executing.
+    if (setitimer (ITIMER_VIRTUAL, &timer, nullptr)) {
+        std::cerr << ERR_SYS_CALL << "Setting the virtual timer has failed.\n";
+        return -1;
+    }
 }
 
 
@@ -52,24 +89,27 @@ std::vector<Thread*> initBuffer() {
 */
 int uthread_init(int quantum_usecs)
 {
-    // validate input
     if (quantum_usecs <= 0)
     {
-        //print error and return
+        std::cerr << ERR_FUNC_FAIL << "invalid quantum len was supplied.\n";
+        return -1;
     }
 
-    // initialize variables
-    buf = initBuffer();
+    // initialize variables and create an object from the main thread:
+    if (initBuffer() < 0)
+    {
+        return -1;
+    }
+    buf[0] = new Thread(0, nullptr);    //todo: how to set entry point to the main thread?
+    buf[0]->setStatus(RUNNING);
     numThreads = 1;
     currentThreadId = 0;
 
-    //set timer:
-    timer.it_value.tv_sec = 0;
-    timer.it_value.tv_usec = quantum_usecs;
-    timer.it_interval.tv_sec = 0;
-    timer.it_interval.tv_usec = quantum_usecs;
-    // start the virtual timer
-    setitimer (ITIMER_VIRTUAL, &timer, nullptr);
+    // set timer:
+    if (setTimer(quantum_usecs) < 0)
+    {
+        return -1;
+    }
 }
 
 /*
