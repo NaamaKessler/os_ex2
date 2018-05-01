@@ -73,14 +73,16 @@ int uthread_spawn(void (*f)(void))
         //assign id
         for (int i=0; i<MAX_THREAD_NUM; i++)
         {
-            if (buf.at(i) == nullptr)
+            if (buf.at(i) == NULL)
             {
                 tid = i;
             }
         }
 
         //f points to the starting point - pc - of the thread
-        readyBuf.push_back(new Thread(tid, f));
+        Thread* t = new Thread(tid, f);
+        readyBuf.push_back(t); // not necessarily at tid - order of ready
+        buf.at(tid) = t; // inserts thread in the minimal open tid, not end of line
         numThreads++;
     }
     return tid;
@@ -132,6 +134,18 @@ int uthread_terminate(int tid)
 */
 int uthread_block(int tid)
 {
+    if (tid == 0 || buf.at(tid) == NULL)
+    {
+        return -1;
+    }
+
+    if (buf.at(tid)->getStatus() == READY)
+    {
+        //todo: remove from ready
+    }
+    buf.at(tid)->setStatus(BLOCKED);
+
+
     return 0;
 }
 
