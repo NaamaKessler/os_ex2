@@ -7,6 +7,7 @@
 
 #include <iostream>
 #include <exception>
+#include <sys/time.h>
 #include <vector>
 #include "uthreads.h"
 #include "Thread.h"
@@ -23,14 +24,16 @@
 
 std::vector<Thread*> buf;
 static std::vector<Thread*> readyBuf;
-int quant;
 static int numThreads;
 static int currentThreadId;
+struct itimerval timer;
 
 // ---------- buf;--------------------- methods ------------------------------
 
 
+void schedualer(){
 
+}
 
 std::vector<Thread*> initBuffer() {
     static std::vector<Thread*> buffer(MAX_THREAD_NUM);
@@ -49,10 +52,24 @@ std::vector<Thread*> initBuffer() {
 */
 int uthread_init(int quantum_usecs)
 {
+    // validate input
+    if (quantum_usecs <= 0)
+    {
+        //print error and return
+    }
+
+    // initialize variables
     buf = initBuffer();
-    quant = quantum_usecs;
     numThreads = 1;
     currentThreadId = 0;
+
+    //set timer:
+    timer.it_value.tv_sec = 0;
+    timer.it_value.tv_usec = quantum_usecs;
+    timer.it_interval.tv_sec = 0;
+    timer.it_interval.tv_usec = quantum_usecs;
+    // start the virtual timer
+    setitimer (ITIMER_VIRTUAL, &timer, nullptr);
 }
 
 /*
