@@ -1,1 +1,1 @@
-/usr/bin/c++.exe -g  -Wl,--enable-auto-import CMakeFiles/os_ex2.dir/main.cpp.o CMakeFiles/os_ex2.dir/uthreads.cpp.o CMakeFiles/os_ex2.dir/Thread.cpp.o  -o os_ex2.exe -Wl,--out-implib,libos_ex2.dll.a -Wl,--major-image-version,0,--minor-image-version,0 
+/usr/bin/c++  -g   CMakeFiles/os_ex2.dir/main.cpp.o CMakeFiles/os_ex2.dir/uthreads.cpp.o CMakeFiles/os_ex2.dir/Thread.cpp.o  -o os_ex2 
