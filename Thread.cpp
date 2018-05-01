@@ -7,25 +7,30 @@
 // ------------------------------ includes ------------------------------
 #include "Thread.h"
 
+
 // ------------------------------- methods ------------------------------
-using namespace Thread;
+
+
 
 /**
  * @brief Constructor with thread ID.
  * @param tid - thread ID.
  */
-Thread(int tid, void (*f)(void))
+Thread::Thread(int tid, void (*f)(void))
 {
     this->_tid = tid;
-    this->_dependencyQueue = queue<*thread> q;
+    this->_dependencyQueue =*(new std::vector<Thread*>);
+    this->_status = READY;
+    this->_sp = (address_t)this->_stack + STACK_SIZE - sizeof(address_t);
+    this->_pc = (address_t)f;
 }
 
 /**
  * @return Thread ID
  */
-int getId()
+int Thread::getId()
 {
-    return _tid;
+    return this->_tid;
 }
 
 /**
@@ -33,7 +38,7 @@ int getId()
  * @param status - READY/RUNNING/BLOCKED
  * @return 0 - success, -1 - failure
  */
-int setStatus(int status)
+int Thread::setStatus(int status)
 {
     if (status == READY || status == RUNNING || status == BLOCKED)
     {
@@ -48,9 +53,9 @@ int setStatus(int status)
  * @param thread
  * @return
  */
-int pushDependent(Thread *thread)
+int Thread::pushDependent(Thread *thread)
 {
-    this->_dependencyQueue.push(thread);
+    this->_dependencyQueue.push_back(thread);
 }
 
 /**
@@ -58,7 +63,14 @@ int pushDependent(Thread *thread)
  * @param thread
  * @return
  */
-thread* popDependent(Thread *thread)
+Thread* Thread::popDependent(Thread *thread)
 {
-    return this->_dependencyQueue.pop();
+    Thread* t = nullptr;
+    if (!_dependencyQueue.empty())
+    {
+        t = this->_dependencyQueue.front();
+        this->_dependencyQueue.pop_back();
+
+    }
+    return t;
 }

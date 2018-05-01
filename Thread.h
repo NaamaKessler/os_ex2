@@ -10,15 +10,19 @@
 #define EX2_THREAD_H
 #define STACK_SIZE 4096
 
+#include <iostream>
+#include <queue>
+
 // status:
 #define READY 1
 #define RUNNING 2
 #define BLOCKED 3
 
 
+
 // ------------------------------- methods ------------------------------
 using namespace std;
-
+typedef unsigned long address_t;
 
 
 class Thread
@@ -28,12 +32,12 @@ public:
      * @brief Constructor with thread ID.
      * @param tid - thread ID.
      */
-    Thread(int tid);
+    Thread(int tid, void (*f)(void));
 
     /**
      * @return Thread ID
      */
-    int getId() const;
+    int getId();
 
     /**
      * Set thread status
@@ -54,13 +58,14 @@ public:
      * @param thread
      * @return
      */
-    thread* popDependent(Thread *thread);
+    Thread* popDependent(Thread *thread);
 
 private:
     int _tid;
     int _status;
     char _stack[STACK_SIZE];
-    queue<*Thread> _dependencyQueue;
+    vector<Thread*> _dependencyQueue;
+    address_t _sp, _pc;
 
 };
 
