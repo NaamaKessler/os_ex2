@@ -15,28 +15,27 @@
 // ------------------------------- globals ------------------------------
 
 //todo: How to initialize inside init() but as globals?
-Thread** buf[MAX_THREAD_NUM] = {};
-static std::vector<Thread> readyBuf;
-static int numThreads = 1;
-static int currentThread = 0;
-static int quant;
+//Thread** buf[MAX_THREAD_NUM] = {};
+//static std::vector<Thread> readyBuf;
+//static int numThreads = 1;
+//static int currentThread = 0;
+//static int quant;
 
-// ------------------------------- methods ------------------------------
+std::vector<Thread*> buf;
+static std::vector<Thread*> readyBuf;
+int quant;
+static int numThreads;
+static int currentThreadId;
 
-int getQuant(int quantum_usecs){        // todo: ???
-    static int quant = quantum_usecs;
-    return quant;
-}
+// ---------- buf;--------------------- methods ------------------------------
 
 
-static Thread*** getBuffer() {
-    try {
-        static Thread* buf[MAX_THREAD_NUM] = {};        // todo: ???
-    }
-    catch (exception& e) {
-        //add except. msg.
-    }
-    return buf;
+
+
+std::vector<Thread*> initBuffer() {
+    static std::vector<Thread*> buffer(MAX_THREAD_NUM);
+    return buffer;
+
 }
 
 
@@ -50,8 +49,10 @@ static Thread*** getBuffer() {
 */
 int uthread_init(int quantum_usecs)
 {
-    getBuffer();
-    getQuant(quantum_usecs);
+    buf = initBuffer();
+    quant = quantum_usecs;
+    numThreads = 1;
+    currentThreadId = 0;
 }
 
 /*
@@ -68,7 +69,7 @@ int uthread_spawn(void (*f)(void))
 {
     if (numThreads == MAX_THREAD_NUM)
     {
-
+        //
     }
 
 }
@@ -87,6 +88,22 @@ int uthread_spawn(void (*f)(void))
 */
 int uthread_terminate(int tid)
 {
+    // check validity of input
+    if (tid < 0 || tid > MAX_THREAD_NUM || buf[tid]==nullptr) {
+        return -1;
+    }
+    /// terminate main thread
+    else if (!tid) {
+
+    }
+    else {
+        // inform all depending
+        for (Thread* dependent : buf[tid]->getDepndencies()){  //todo: add way to get dependencies
+            //move to ready list
+            dependent->setStatus(READY);
+            readyBuf.push_back(dependent);
+        }
+    }
     return 0;
 }
 
