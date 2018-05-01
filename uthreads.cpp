@@ -21,7 +21,6 @@ static int numThreads = 1;
 static int currentThread = 0;
 static int quant;
 
-
 // ------------------------------- methods ------------------------------
 
 int getQuant(int quantum_usecs){        // todo: ???
@@ -67,19 +66,10 @@ int uthread_init(int quantum_usecs)
 */
 int uthread_spawn(void (*f)(void))
 {
-    int tid = -1;
-
     if (numThreads == MAX_THREAD_NUM)
     {
-        // assign id
 
-
-        //f points to the starting point - pc - of the thread
-        readyBuf.push_back(*(new Thread(tid, f)));
-        numThreads++;
     }
-
-    return tid;
 
 }
 
