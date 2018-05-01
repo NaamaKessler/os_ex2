@@ -25,6 +25,7 @@ Thread::Thread(int tid, void (*f)(void))
     this->_pc = (address_t)f;
 }
 
+
 /**
  * @return Thread ID
  */
@@ -46,6 +47,14 @@ int Thread::setStatus(int status)
         return 0;
     }
     return -1;
+}
+
+/**
+ * Get thread's state.
+ */
+int Thread::getStatus()
+{
+    return this->_status;
 }
 
 /**

@@ -9,6 +9,7 @@
 #include <exception>
 #include <sys/time.h>
 #include <vector>
+#include <algorithm>
 #include "uthreads.h"
 #include "Thread.h"
 
@@ -161,20 +162,36 @@ int uthread_spawn(void (*f)(void))
 int uthread_terminate(int tid)
 {
     // check validity of input
-    if (tid < 0 || tid > MAX_THREAD_NUM || buf[tid]==nullptr) {
+    if (tid < 0 || tid > MAX_THREAD_NUM || !buf[tid]) {
+        std::cerr << ERR_FUNC_FAIL << "Invalid input.\n";
         return -1;
     }
-    /// terminate main thread
-    else if (!tid) {
+    // terminated thread != main thread:
+    else if (tid) {
+
+        // inform all depending threads:
+//        for (Thread* dependent : buf[tid]->getDepndencies()){  //todo: add way to get dependencies
+//            //move to ready list
+//            dependent->setStatus(READY);
+//            readyBuf.push_back(dependent);
+//        }
+
+        // pop out of ready list:
+        if (buf[tid]->getStatus() == READY)
+        {
+            //remove
+        }
+
+        // delete:
+        delete buf[tid];
+        buf[tid] = nullptr;
+
+        //call scheduler
 
     }
+    // terminate the main thread:
     else {
-        // inform all depending
-        for (Thread* dependent : buf[tid]->getDepndencies()){  //todo: add way to get dependencies
-            //move to ready list
-            dependent->setStatus(READY);
-            readyBuf.push_back(dependent);
-        }
+
     }
     return 0;
 }

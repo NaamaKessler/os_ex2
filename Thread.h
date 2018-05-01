@@ -48,6 +48,11 @@ public:
     int setStatus(int status);
 
     /**
+     * Get thread's state.
+     */
+    int getStatus();
+
+    /**
      *
      * @param thread
      * @return
