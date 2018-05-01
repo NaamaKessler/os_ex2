@@ -67,10 +67,23 @@ int uthread_init(int quantum_usecs)
 */
 int uthread_spawn(void (*f)(void))
 {
-    if (numThreads == MAX_THREAD_NUM)
+    int tid = -1;
+    if (numThreads < MAX_THREAD_NUM)
     {
-        //
+        //assign id
+        for (int i=0; i<MAX_THREAD_NUM; i++)
+        {
+            if (buf.at(i) == nullptr)
+            {
+                tid = i;
+            }
+        }
+
+        //f points to the starting point - pc - of the thread
+        readyBuf.push_back(new Thread(tid, f));
+        numThreads++;
     }
+    return tid;
 
 }
 
