@@ -72,7 +72,7 @@ int Thread::pushDependent(Thread *thread)
  * @param thread
  * @return
  */
-Thread* Thread::popDependent(Thread *thread)
+Thread* Thread::popDependent() //todo: I removed the argument since it wasn't being used
 {
     Thread* t = nullptr;
     if (!_dependencyQueue.empty())
@@ -82,4 +82,13 @@ Thread* Thread::popDependent(Thread *thread)
 
     }
     return t;
+}
+
+/**
+ * Return the number of threads that are synced to this thread.
+ * @return
+ */
+int Thread::getDependentsNum()
+{
+    return this->_dependencyQueue.size();
 }

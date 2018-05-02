@@ -64,7 +64,13 @@ public:
      * @param thread
      * @return
      */
-    Thread* popDependent(Thread *thread);
+    Thread* popDependent();
+
+    /**
+     * Return the number of threads that are synced to this thread.
+     * @return
+     */
+    int getDependentsNum();
 
 private:
     int _tid;

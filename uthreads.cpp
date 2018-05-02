@@ -99,15 +99,13 @@ int setTimer(int quantum_usecs) {
 */
 int uthread_init(int quantum_usecs)
 {
-    if (quantum_usecs <= 0)
-    {
+    if (quantum_usecs <= 0) {
         std::cerr << ERR_FUNC_FAIL << "invalid quantum len was supplied.\n";
         return -1;
     }
 
     // initialize variables and create an object from the main thread:
-    if (initBuffer() < 0)
-    {
+    if (initBuffer() < 0) {
         return -1;
     }
     buf[0] = new Thread(0, nullptr);    //todo: how to set entry point to the main thread?
@@ -116,8 +114,7 @@ int uthread_init(int quantum_usecs)
     currentThreadId = 0;
 
     // set timer:
-    if (setTimer(quantum_usecs) < 0)
-    {
+    if (setTimer(quantum_usecs) < 0) {
         return -1;
     }
 }
@@ -157,6 +154,34 @@ int uthread_spawn(void (*f)(void))
 }
 
 
+/**
+ * Remove thread from the specified buffer by ID.
+ * @param buffer
+ * @param tid
+ */
+void removeFromBuf(std::vector<Thread*> buffer, int tid)
+{
+    for (int idx = 0; idx < buffer.size(); idx++) {
+        if (buffer[idx]->getId() == tid) {
+            buffer.erase(buffer.begin() + idx);
+        }
+    }
+}
+
+/**
+ * Upon termination of a thread, informs all the threads that are synced to it.
+ * @param tid
+ */
+void informDependents(int tid)
+{
+    Thread* dependent;
+    for (int i = 0; i < buf[tid]->getDependentsNum(); i++) {
+        dependent = buf[tid]->popDependent();
+        dependent->setStatus(READY);
+        readyBuf.push_back(dependent);
+    }
+}
+
 /*
  * Description: This function terminates the thread with ID tid and deletes
  * it from all relevant control structures. All the resources allocated by
@@ -175,34 +200,38 @@ int uthread_terminate(int tid)
         std::cerr << ERR_FUNC_FAIL << "Invalid input.\n";
         return -1;
     }
+
     // terminated thread != main thread:
     else if (tid) {
-
+        bool callScheduler = false;
         // inform all depending threads:
-//        for (Thread* dependent : buf[tid]->getDepndencies()){  //todo: add way to get dependencies
-//            //move to ready list
-//            dependent->setStatus(READY);
-//            readyBuf.push_back(dependent);
-//        }
-
+        informDependents(tid);
         // pop out of ready list:
-        if (buf[tid]->getStatus() == READY)
-        {
-            //remove
+        if (buf[tid]->getStatus() == READY) {
+            removeFromBuf(readyBuf, tid);
         }
-
-        // delete:
+        else if (buf[tid]->getStatus() == RUNNING) {
+            callScheduler = true;
+        }
+        // delete thread:
         delete buf[tid];
         buf[tid] = nullptr;
-
-        //call scheduler
-
+        numThreads--;
+        if (callScheduler){
+            //call scheduler.
+        }
+        return 0;
     }
     // terminate the main thread:
     else {
-
+        for (Thread* thread: buf) {
+            delete(thread);
+        }
+        vector<Thread*> dummy_1, dummy_2;
+        buf.swap(dummy_1);
+        readyBuf.swap(dummy_2);
+        exit(0);
     }
-    return 0;
 }
 
 
