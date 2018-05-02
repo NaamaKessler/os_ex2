@@ -52,6 +52,9 @@ public:
      */
     int getStatus();
 
+
+    queue<Thread*> getDependencies();
+
     /**
      *
      * @param thread
@@ -76,7 +79,7 @@ private:
     int _tid;
     int _status;
     char _stack[STACK_SIZE];
-    vector<Thread*> _dependencyQueue;
+    queue<Thread*> _dependencyQueue;
     address_t _sp, _pc;
     sigjmp_buf _contextBuf;
 

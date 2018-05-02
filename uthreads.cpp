@@ -246,8 +246,10 @@ int uthread_terminate(int tid)
 */
 int uthread_block(int tid)
 {
+    //todo: scheduling decision - change running? scheduler?
+
     // check id validity
-    if (_idValidator(tid)==-1)
+    if (tid == 0 || _idValidator(tid)==-1)
     {
         return -1;
     }
@@ -255,17 +257,9 @@ int uthread_block(int tid)
     // remove from ready
     if (buf[tid]->getStatus() == READY)
     {
-        for (int i=0; i<currentThreadId; i++)
-        {
-            if (readyBuf[i]!= NULL && readyBuf[i]->getId()==tid)
-            {
-                readyBuf[i] = NULL; // is this a good way to delete??
-                // can't pop bc it's not necessarily at the top
-            }
-        }
+        removeFromBuf(readyBuf, tid);
     }
     buf[tid]->setStatus(BLOCKED);
-
 
     return 0;
 }
@@ -295,6 +289,21 @@ int uthread_resume(int tid)
 */
 int uthread_sync(int tid)
 {
+    // the running thread is calling this func - currentThreadId
+
+    // block current thread
+    if (uthread_block(currentThreadId) == -1)
+    {
+        return -1;
+    }
+
+    // currentThreadId should wait until tid finishes its job
+    buf.at(currentThreadId)->pushDependent(buf.at(tid));
+
+
+    //todo: scheduling decision - move to running. scheduler?
+
+    // todo: handle errors - main thread
     return 0;
 }
 
@@ -326,4 +335,14 @@ int uthread_get_total_quantums()
 /*
  * Description: This function returns the number of quantums the thread with
  * ID tid was in RUNNING state. On the first time a thread runs, the function
- * should return 1. Every add
+ * should return 1. Every additional quantum that the thread starts should
+ * increase this value by 1 (so if the thread with ID tid is in RUNNING state
+ * when this function is called, include also the current quantum). If no
+ * thread with ID tid exists it is considered an error.
+ * Return value: On success, return the number of quantums of the thread with ID tid.
+ * 			     On failure, return -1.
+*/
+int uthread_get_quantums(int tid)
+{
+    return 0;
+}
