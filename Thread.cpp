@@ -19,7 +19,7 @@
 Thread::Thread(int tid, void (*f)(void))
 {
     this->_tid = tid;
-    this->_dependencyQueue =*(new std::vector<Thread*>);
+    this->_dependencyQueue =*(new std::queue<Thread*>);
     this->_status = READY;
     this->_sp = (address_t)this->_stack + STACK_SIZE - sizeof(address_t);
     this->_pc = (address_t)f;
@@ -49,6 +49,13 @@ int Thread::setStatus(int status)
     return -1;
 }
 
+
+queue<Thread*> Thread::getDependencies()
+{
+    return this->_dependencyQueue;
+}
+
+
 /**
  * Get thread's state.
  */
@@ -64,7 +71,7 @@ int Thread::getStatus()
  */
 int Thread::pushDependent(Thread *thread)
 {
-    this->_dependencyQueue.push_back(thread);
+    this->_dependencyQueue.push(thread);
 }
 
 /**
@@ -78,7 +85,7 @@ Thread* Thread::popDependent() //todo: I removed the argument since it wasn't be
     if (!_dependencyQueue.empty())
     {
         t = this->_dependencyQueue.front();
-        this->_dependencyQueue.pop_back();
+        _dependencyQueue.pop();
 
     }
     return t;
