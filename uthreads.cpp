@@ -31,10 +31,19 @@ static struct itimerval timer;
 // ---------- buf;--------------------- methods ------------------------------
 
 
+int _idValidator(int tid) // copied from uthread_init
+{
+    // check validity of input
+    if (tid < 0 || tid > MAX_THREAD_NUM || !buf[tid]) {
+        std::cerr << ERR_FUNC_FAIL << "Invalid input.\n";
+        return -1;
+    }
+    return 0;
+}
+
 void schedualer(int sig){
 
 }
-
 
 
 /**
@@ -131,7 +140,7 @@ int uthread_spawn(void (*f)(void))
         //assign id
         for (int i=0; i<MAX_THREAD_NUM; i++)
         {
-            if (buf.at(i) == NULL)
+            if (buf[i] == NULL)
             {
                 tid = i;
             }
@@ -140,7 +149,7 @@ int uthread_spawn(void (*f)(void))
         //f points to the starting point - pc - of the thread
         Thread* t = new Thread(tid, f);
         readyBuf.push_back(t); // not necessarily at tid - order of ready
-        buf.at(tid) = t; // inserts thread in the minimal open tid, not end of line
+        buf[tid] = t; // inserts thread in the minimal open tid, not end of line
         numThreads++;
     }
     return tid;
@@ -208,20 +217,31 @@ int uthread_terminate(int tid)
 */
 int uthread_block(int tid)
 {
-    if (tid == 0 || buf.at(tid) == NULL)
+    // check id validity
+    if (_idValidator(tid)==-1)
     {
         return -1;
     }
 
-    if (buf.at(tid)->getStatus() == READY)
+    // remove from ready
+    if (buf[tid]->getStatus() == READY)
     {
-        //todo: remove from ready
+        for (int i=0; i<currentThreadId; i++)
+        {
+            if (readyBuf[i]!= NULL && readyBuf[i]->getId()==tid)
+            {
+                readyBuf[i] = NULL; // is this a good way to delete??
+                // can't pop bc it's not necessarily at the top
+            }
+        }
     }
-    buf.at(tid)->setStatus(BLOCKED);
+    buf[tid]->setStatus(BLOCKED);
 
 
     return 0;
 }
+
+
 
 
 /*
@@ -277,14 +297,4 @@ int uthread_get_total_quantums()
 /*
  * Description: This function returns the number of quantums the thread with
  * ID tid was in RUNNING state. On the first time a thread runs, the function
- * should return 1. Every additional quantum that the thread starts should
- * increase this value by 1 (so if the thread with ID tid is in RUNNING state
- * when this function is called, include also the current quantum). If no
- * thread with ID tid exists it is considered an error.
- * Return value: On success, return the number of quantums of the thread with ID tid.
- * 			     On failure, return -1.
-*/
-int uthread_get_quantums(int tid)
-{
-    return 0;
-}
+ * should return 1. Every add
