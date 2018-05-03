@@ -10,6 +10,7 @@
 #include <sys/time.h>
 #include <vector>
 #include <algorithm>
+#include <signal.h>
 #include "uthreads.h"
 #include "Thread.h"
 
@@ -19,10 +20,12 @@
 
 // ------------------------------- globals ------------------------------
 
-static std::vector<Thread*> buf;
+static std::vector<Thread*> buf(MAX_THREAD_NUM); // changed it - not dynamic allocation
 static std::vector<Thread*> readyBuf;
 static int numThreads;
 static int currentThreadId;
+static int totalQuantumNum;
+sigjmp_buf env[MAX_THREAD_NUM]; // ?
 
 //timer globals:
 struct sigaction sa;
@@ -41,8 +44,33 @@ int _idValidator(int tid) // copied from uthread_init
     return 0;
 }
 
-void schedualer(int sig){
 
+/**
+ * times up -> signal -> time handler is called:
+ * 1. contextSwitch (handles env)
+ * 2. Scheduler (handles buf & states)
+ * @param sig
+ */
+void timeHandler(int sig){
+    totalQuantumNum++;
+    // call scheduler
+    // call context switch
+}
+
+void scheduler(int sig){
+    // determine who's running next
+
+}
+
+void contextSwitch(int tid){
+    // buffs
+    int ret_val = sigsetjmp(env[currentThreadId],1);
+    if (ret_val == 1) {
+        return;
+    }
+
+    siglongjmp(env[currentThreadId],1);
+    // todo:  not done
 }
 
 
@@ -50,13 +78,15 @@ void schedualer(int sig){
  * Initializes a buffer to contain all existing threads.
  */
 int initBuffer() {
-    try {
-        buf = new std::vector(MAX_THREAD_NUM);
-    }
-    catch (std::bad_alloc& e){
-        std::cerr << ERR_SYS_CALL << "Memory allocation failed.\n";
-        return -1;
-    }
+//    try {
+//        buf = new std::vector(MAX_THREAD_NUM);
+//    }
+//    catch (std::bad_alloc& e){
+//        std::cerr << ERR_SYS_CALL << "Memory allocation failed.\n";
+//        return -1;
+//    }
+//    std::vector<Thread*> buf(MAX_THREAD_NUM);
+
     return 0;
 
 }
@@ -67,7 +97,8 @@ int initBuffer() {
 int setTimer(int quantum_usecs) {
 
     //set timer handler:
-    sa.sa_handler = &schedualer;
+//    sa.sa_handler = &scheduler;
+    sa.sa_handler = &timeHandler;
     if (sigaction(SIGVTALRM, &sa, nullptr) < 0) {
         std::cerr << ERR_SYS_CALL << "sigaction has failed.\n";     //todo: change.
         return -1;
@@ -112,6 +143,7 @@ int uthread_init(int quantum_usecs)
     buf[0]->setStatus(RUNNING);
     numThreads = 1;
     currentThreadId = 0;
+    totalQuantumNum = 1; // "Right after the call to uthread_init, the value should be 1."
 
     // set timer:
     if (setTimer(quantum_usecs) < 0) {
@@ -148,6 +180,9 @@ int uthread_spawn(void (*f)(void))
         readyBuf.push_back(t); // not necessarily at tid - order of ready
         buf[tid] = t; // inserts thread in the minimal open tid, not end of line
         numThreads++;
+    }
+    if (tid == -1){
+        std::cerr << ERR_FUNC_FAIL << "Number of threads exceeds limit.\n";
     }
     return tid;
 
@@ -254,11 +289,15 @@ int uthread_block(int tid)
         return -1;
     }
 
+    bool callScheduler = false;
+
     // remove from ready
     if (buf[tid]->getStatus() == READY)
     {
         removeFromBuf(readyBuf, tid);
     }
+
+    // a thread blocks itself - call scheduler
     buf[tid]->setStatus(BLOCKED);
 
     return 0;
@@ -328,7 +367,7 @@ int uthread_get_tid()
 */
 int uthread_get_total_quantums()
 {
-    return 0;
+    return totalQuantumNum;
 }
 
 
