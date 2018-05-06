@@ -97,6 +97,13 @@ queue<Thread*> Thread::getDependencies()
     return this->_dependencyQueue;
 }
 
+/**
+ * get a pointer to the thread's enivronment. (Context Buf)
+ */
+sigjmp_buf* Thread::getEnvironment(){
+    return this->&_contextBuf;
+}
+
 
 /**
  * Get thread's state.

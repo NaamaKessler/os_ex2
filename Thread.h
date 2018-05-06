@@ -8,18 +8,17 @@
 
 #ifndef EX2_THREAD_H
 #define EX2_THREAD_H
-#define STACK_SIZE 4096
+#define STACK_SIZE 4096 // maybe should be changed - it's defined in uthreads
 
 #include <iostream>
 #include <queue>
 #include <csetjmp>
+#include <signal.h>
 
 // status:
 #define READY 1
 #define RUNNING 2
 #define BLOCKED 3
-
-
 
 // ------------------------------- methods ------------------------------
 using namespace std;
@@ -52,6 +51,10 @@ public:
      */
     int getStatus();
 
+    /**
+    * get a pointer to the thread's enivronment. (Context Buf)
+    */
+    sigjmp_buf* getEnvironment();
 
     queue<Thread*> getDependencies();
 
