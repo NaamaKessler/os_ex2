@@ -63,14 +63,14 @@ void scheduler(int sig){
 }
 
 void contextSwitch(int tid){
-    // buffs
-    int ret_val = sigsetjmp(env[currentThreadId],1);
+    // save environment
+    int ret_val = sigsetjmp(*(buf[uthread_get_tid()]->getEnvironment()),1);
     if (ret_val == 1) {
         return;
     }
 
-    siglongjmp(env[currentThreadId],1);
-    // todo:  not done
+    // load environment
+    siglongjmp(*(buf[tid]->getEnvironment()),1);
 }
 
 
