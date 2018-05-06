@@ -56,7 +56,7 @@ public:
     */
     sigjmp_buf* getEnvironment();
 
-    queue<Thread*> getDependencies();
+    queue<Thread*> * getDependencies();
 
     /**
      *

@@ -92,9 +92,9 @@ int Thread::setStatus(int status)
 }
 
 
-queue<Thread*> Thread::getDependencies()
+queue<Thread*> * Thread::getDependencies()
 {
-    return this->_dependencyQueue;
+    return &(this->_dependencyQueue);
 }
 
 /**
