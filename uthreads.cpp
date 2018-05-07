@@ -6,12 +6,11 @@
 // ------------------------------ includes ------------------------------
 
 #include <iostream>
-#include <exception>
 #include <sys/time.h>
 #include <vector>
 #include <algorithm>
 #include <signal.h>
-#include <assert.h>.
+#include <cassert>.
 #include "uthreads.h"
 #include "Thread.h"
 
@@ -24,13 +23,15 @@
 static std::vector<Thread*> buf(MAX_THREAD_NUM); // changed it - not dynamic allocation
 static std::deque<Thread*> readyBuf;
 static int numThreads, currentThreadId, totalQuantumNum;
-sigjmp_buf env[MAX_THREAD_NUM]; // ?
 sigset_t oldSet, newSet;
-int handlerOrigin; // state of the currently running thread , before timeHandler is called.
+int handlerOrigin = READY; // state of the currently running thread , before timeHandler is called.
 
 //timer globals:
 struct sigaction sa;
 static struct itimerval timer;
+
+//todo: REMOVE
+int leakage_count = 0;
 
 
 // -------------------------- inner funcs ------------------------------
@@ -42,13 +43,10 @@ void scheduler(int sig);
 void contextSwitch(int tid);
 int initBuffer();
 int setTimer(int quantum_usecs);
-void removeFromBuf(std::vector<Thread*> buffer, int tid);
 void removeFromBuf(std::deque<Thread*> buffer, int tid);
 void informDependents(int tid);
 
 // ---------------------------- helper methods --------------------------------
-
-// todo: block signals
 
 /**
  * check validity of tid.
@@ -82,6 +80,7 @@ void timeHandler(int sig){
         default:
             scheduler(TERMINATED);
     }
+    handlerOrigin = READY;
     // reset timer:
     if (setitimer (ITIMER_VIRTUAL, &timer, nullptr)) {
         std::cerr << ERR_SYS_CALL << "Resetting the virtual timer has failed.\n";
@@ -165,7 +164,7 @@ int setTimer(int quantum_usecs) {
 
     //set timer handler:
 //    sa.sa_handler = &scheduler;
-    sa.sa_handler = &timeHandler();
+    sa.sa_handler = &timeHandler;
     if (sigaction(SIGVTALRM, &sa, nullptr) < 0) {
         std::cerr << ERR_SYS_CALL << "sigaction has failed.\n";     //todo: change.
         return -1;
@@ -233,7 +232,6 @@ void informDependents(int terminatedId)
         dependent = buf[terminatedId]->popDependent();
         dependent->setStatus(READY);
         readyBuf.push_back(dependent);
-        // uthread_resume(dependent->getId()); --> spares code duplication, but calls sigprocmasc twice.
     }
 }
 
@@ -317,6 +315,7 @@ int uthread_spawn(void (*f)(void))
 
         //f points to the starting point - pc - of the thread
         auto t = new Thread(tid, f);
+        leakage_count++; //todo: REMOVE
         readyBuf.push_back(t); // not necessarily at tid - order of ready
         buf[tid] = t; // inserts thread in the minimal open tid, not end of line
         numThreads++;
@@ -365,9 +364,11 @@ int uthread_terminate(int tid)  //todo: block signals
         }
         // delete thread:
         delete buf[tid];
+        leakage_count--; //todo: REMOVE
         buf[tid] = nullptr;
         numThreads--;
         if (callScheduler){
+            handlerOrigin = BLOCKED;
             timeHandler(BLOCKED);
         }
         if (releaseMask()){
@@ -384,6 +385,9 @@ int uthread_terminate(int tid)  //todo: block signals
         deque<Thread*> dummy_2;
         buf.swap(dummy_1);
         readyBuf.swap(dummy_2);
+
+        std::cout << "leakage counter: " << leakage_count << std::endl; //todo: REMOVE
+
         if (releaseMask()){
             exit(-1);
         }
@@ -403,19 +407,12 @@ int uthread_terminate(int tid)  //todo: block signals
 */
 int uthread_block(int tid)
 {
-    // check id validity
-    if (tid == 0 || _idValidator(tid)==-1)
-    {
-
+    // check id validity and mask:
+    if (tid == 0 || _idValidator(tid)==-1 || mask()) {
         return -1;
     }
-    if (mask()){
-        return -1;
-    }
-
-    // remove from ready
-    if (buf[tid]->getStatus() == READY)
-    {
+    // remove from ready:
+    if (buf[tid]->getStatus() == READY) {
         removeFromBuf(readyBuf, tid);
     }
 
@@ -423,8 +420,7 @@ int uthread_block(int tid)
     buf[tid]->setStatus(BLOCKED);
 
     // a thread blocks itself - call scheduler
-    if (tid == uthread_get_tid())
-    {
+    if (tid == uthread_get_tid()) {
         scheduler(BLOCKED);
     }
 
@@ -433,8 +429,6 @@ int uthread_block(int tid)
     }
     return 0;
 }
-
-
 
 
 /*
