@@ -374,6 +374,7 @@ int uthread_terminate(int tid)  //todo: block signals
     else {
         for (Thread* thread: buf) {
             delete(thread);
+            leakage_count--;
         }
         vector<Thread*> dummy_1;
         deque<Thread*> dummy_2;
