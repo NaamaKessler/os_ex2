@@ -28,8 +28,8 @@
       <file leaf-file-name="uthreads.cpp" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/uthreads.cpp">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="204">
-              <caret line="375" column="9" lean-forward="true" selection-start-line="375" selection-start-column="9" selection-end-line="375" selection-end-column="9" />
+            <state relative-caret-position="-568">
+              <caret line="76" column="5" lean-forward="true" selection-start-line="76" selection-start-column="5" selection-end-line="76" selection-end-column="5" />
               <folding>
                 <element signature="e#109#128#0" expanded="true" />
               </folding>
@@ -275,7 +275,7 @@
       <workItem from="1525513962431" duration="6000" />
       <workItem from="1525617547820" duration="4640000" />
       <workItem from="1525673833261" duration="1404000" />
-      <workItem from="1525678828573" duration="8646000" />
+      <workItem from="1525678828573" duration="9049000" />
     </task>
     <task id="LOCAL-00001" summary="Merge branch 'master' of https://github.com/NaamaKessler/os_ex2&#10;&#10;# Conflicts:&#10;#&#9;.idea/workspace.xml">
       <created>1525172582581</created>
@@ -333,11 +333,18 @@
       <option name="project" value="LOCAL" />
       <updated>1525689865947</updated>
     </task>
-    <option name="localTasksCounter" value="9" />
+    <task id="LOCAL-00009" summary="Merge branch 'master' of https://github.com/NaamaKessler/os_ex2&#10;&#10;# Conflicts:&#10;#&#9;.idea/workspace.xml">
+      <created>1525690838795</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1525690838795</updated>
+    </task>
+    <option name="localTasksCounter" value="10" />
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="37259000" />
+    <option name="totallyTimeSpent" value="37662000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="-8" y="-8" width="1382" height="744" extended-state="6" />
@@ -678,8 +685,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/uthreads.cpp">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="204">
-          <caret line="375" column="9" lean-forward="true" selection-start-line="375" selection-start-column="9" selection-end-line="375" selection-end-column="9" />
+        <state relative-caret-position="-568">
+          <caret line="76" column="5" lean-forward="true" selection-start-line="76" selection-start-column="5" selection-end-line="76" selection-end-column="5" />
           <folding>
             <element signature="e#109#128#0" expanded="true" />
           </folding>

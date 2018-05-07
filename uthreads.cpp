@@ -24,7 +24,7 @@ static std::vector<Thread*> buf(MAX_THREAD_NUM); // changed it - not dynamic all
 static std::deque<Thread*> readyBuf;
 static int numThreads, currentThreadId, totalQuantumNum;
 sigset_t oldSet, newSet;
-int handlerOrigin = READY; // state of the currently running thread , before timeHandler is called.
+bool isReady = true; // state of the currently running thread , before timeHandler is called.
 
 //timer globals:
 struct sigaction sa;
@@ -70,18 +70,12 @@ int _idValidator(int tid) // copied from uthread_init
 void timeHandler(int sig){
     totalQuantumNum++;
     // call scheduler:
-    switch (handlerOrigin){
-        case READY:
-            scheduler(READY); // scheduling decisions bc of timer - cur thread should switch to ready
-            break;
-        case BLOCKED:
-            scheduler(BLOCKED); // scheduling decisions bc of timer - cur thread should switch to blocked
-            break;
-        default:
-            scheduler(TERMINATED);
-            break;
+    if (isReady){
+        scheduler(READY); // scheduling decisions bc of timer - cur thread should switch to ready
+    } else {
+        scheduler(BLOCKED); // scheduling decisions bc of timer - cur thread should switch to blocked
     }
-    handlerOrigin = READY;
+    isReady = true;
     // reset timer:
     if (setitimer (ITIMER_VIRTUAL, &timer, nullptr)) {
         std::cerr << ERR_SYS_CALL << "Resetting the virtual timer has failed.\n";
@@ -111,13 +105,9 @@ void scheduler(int state){
         // move old running thread to state
         buf[uthread_get_tid()]->setStatus(state);
         buf[uthread_get_tid()]->setStatus(state);
-        switch (state){
-            case READY:
-                readyBuf.push_back(buf[uthread_get_tid()]);
-                break;
-            default:
-                break;
-            }
+        if (isReady){
+            readyBuf.push_back(buf[uthread_get_tid()]);
+        }
         // pop new running thread from ready to running
         runningThread = readyBuf.front();
         readyBuf.pop_front(); // pop just deletes the element
@@ -369,7 +359,7 @@ int uthread_terminate(int tid)  //todo: block signals
         buf[tid] = nullptr;
         numThreads--;
         if (callScheduler){
-            handlerOrigin = BLOCKED;
+            isReady = false;
             timeHandler(BLOCKED);
         }
         if (releaseMask()){
