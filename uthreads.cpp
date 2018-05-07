@@ -79,6 +79,7 @@ void timeHandler(int sig){
             break;
         default:
             scheduler(TERMINATED);
+            break;
     }
     handlerOrigin = READY;
     // reset timer:
