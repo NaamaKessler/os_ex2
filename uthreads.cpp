@@ -10,7 +10,7 @@
 #include <vector>
 #include <algorithm>
 #include <signal.h>
-#include <cassert>.
+#include <cassert>
 #include "uthreads.h"
 #include "Thread.h"
 
@@ -174,6 +174,7 @@ int setTimer(int quantum_usecs) {
         std::cerr << ERR_SYS_CALL << "Setting the virtual timer has failed.\n";
         return -1;
     }
+    return 0;
 }
 
 /**
@@ -185,6 +186,7 @@ int mask(){
         std::cerr << ERR_SYS_CALL << "Masking failed.\n";
         return -1;
     }
+    return 0;
 }
 
 /**
@@ -196,6 +198,7 @@ int releaseMask(){
         std::cerr << ERR_SYS_CALL << "Un-masking failed.\n";
         return -1;
     }
+    return 0;
 }
 
 /**
@@ -205,7 +208,7 @@ int releaseMask(){
  */
 void removeFromBuf(std::deque<Thread*> buffer, int tid)
 {
-    for (int idx = 0; idx < buffer.size(); idx++) {
+    for (unsigned int idx = 0; idx < buffer.size(); idx++) {
         if (buffer[idx]->getId() == tid) {
             buffer.erase(buffer.begin() + idx);
         }
@@ -514,7 +517,7 @@ int uthread_get_total_quantums()
 */
 int uthread_get_quantums(int tid)
 {
-    if (_idValidator){
+    if (_idValidator(tid)){
         return -1;
     }
     return buf[tid]->getNumQuantums();

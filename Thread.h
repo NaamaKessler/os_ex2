@@ -68,7 +68,7 @@ public:
      * @param thread
      * @return
      */
-    int pushDependent(Thread *thread);
+    void pushDependent(Thread *thread);
 
     /**
      *

@@ -113,7 +113,7 @@ queue<Thread*> * Thread::getDependencies()
  * get a pointer to the thread's enivronment. (Context Buf)
  */
 sigjmp_buf* Thread::getEnvironment(){
-    return this->&_contextBuf;
+    return &(this->_contextBuf);
 }
 
 
@@ -130,7 +130,7 @@ int Thread::getStatus()
  * @param thread
  * @return
  */
-int Thread::pushDependent(Thread *thread)
+void Thread::pushDependent(Thread *thread)
 {
     this->_dependencyQueue.push(thread);
 }
