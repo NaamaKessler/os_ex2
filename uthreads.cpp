@@ -251,7 +251,7 @@ int uthread_init(int quantum_usecs)
 //        sigprocmask(SIG_SETMASK, &oldSet,  nullptr);
 //        return -1;
 //    }
-    buf[0] = new Thread(0, nullptr);
+    buf[0] = new Thread(0, nullptr, STACK_SIZE);
     buf[0]->setStatus(RUNNING);
 //    readyBuf.push_back(buf[0]); //todo: Is that needed?
     numThreads = 1;
@@ -305,7 +305,7 @@ int uthread_spawn(void (*f)(void))
         }
 
         //f points to the starting point - pc - of the thread
-        auto t = new Thread(tid, f);
+        auto t = new Thread(tid, f, STACK_SIZE);
         leakage_count++; //todo: REMOVE
         readyBuf.push_back(t); // not necessarily at tid - order of ready
         buf[tid] = t; // inserts thread in the minimal open tid, not end of line

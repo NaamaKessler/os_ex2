@@ -19,7 +19,6 @@
 #define READY 1
 #define RUNNING 2
 #define BLOCKED 3
-#define TERMINATED 4
 
 // ------------------------------- methods ------------------------------
 using namespace std;
@@ -33,7 +32,7 @@ public:
      * @brief Constructor with thread ID.
      * @param tid - thread ID.
      */
-    Thread(int tid, void (*f)(void));
+    Thread(int tid, void (*f)(void), int stackSize);
 
     /**
      * @return Thread ID
