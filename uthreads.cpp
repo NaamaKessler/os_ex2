@@ -71,12 +71,18 @@ int _idValidator(int tid) // copied from uthread_init
  */
 void timeHandler(int sig){
     totalQuantumNum++;
-
-    // call scheduler
-
-    scheduler(READY); // scheduling decisions bc of timer - cur thread should switch to ready
-
-    // reset timer
+    // call scheduler:
+    switch (handlerOrigin){
+        case READY:
+            scheduler(READY); // scheduling decisions bc of timer - cur thread should switch to ready
+            break;
+        case BLOCKED:
+            scheduler(BLOCKED); // scheduling decisions bc of timer - cur thread should switch to blocked
+            break;
+        default:
+            scheduler(TERMINATED);
+    }
+    // reset timer:
     if (setitimer (ITIMER_VIRTUAL, &timer, nullptr)) {
         std::cerr << ERR_SYS_CALL << "Resetting the virtual timer has failed.\n";
     }
@@ -103,13 +109,14 @@ void scheduler(int state){
         return;
     } else {
         // move old running thread to state
-        buf[uthread_get_tid()]->setStatus(state); 
+        buf[uthread_get_tid()]->setStatus(state);
+        buf[uthread_get_tid()]->setStatus(state);
         switch (state){
             case READY:
                 readyBuf.push_back(buf[uthread_get_tid()]);
-                return;
+                break;
             default:
-                return;
+                break;
             }
         // pop new running thread from ready to running
         runningThread = readyBuf.front();
@@ -397,8 +404,12 @@ int uthread_terminate(int tid)  //todo: block signals
 int uthread_block(int tid)
 {
     // check id validity
-    if (tid == 0 || _idValidator(tid)==-1 || mask())
+    if (tid == 0 || _idValidator(tid)==-1)
     {
+
+        return -1;
+    }
+    if (mask()){
         return -1;
     }
 
