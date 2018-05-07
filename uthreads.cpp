@@ -484,10 +484,6 @@ int uthread_sync(int tid)
     scheduler(BLOCKED);
 
 
-
-
-    //todo: scheduling decision - move to running. scheduler?
-
     // todo: handle errors - main thread
 
     if (releaseMask()){
