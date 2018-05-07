@@ -76,6 +76,7 @@ void timeHandler(int sig){
         scheduler(BLOCKED); // scheduling decisions bc of timer - cur thread should switch to blocked
     }
     isReady = true;
+    buf[currentThreadId]->increaseNumQuantums();
     // reset timer:
     if (setitimer (ITIMER_VIRTUAL, &timer, nullptr)) {
         std::cerr << ERR_SYS_CALL << "Resetting the virtual timer has failed.\n";
@@ -99,7 +100,7 @@ void scheduler(int state){
     // pop READY thread from readyBuf
     if (readyBuf.front()->getId() == 0)
     {
-        // main thread is ready
+        // main thread is ready+
         return;
     } else {
         // move old running thread to state
@@ -112,7 +113,6 @@ void scheduler(int state){
         runningThread = readyBuf.front();
         readyBuf.pop_front(); // pop just deletes the element
         runningThread->setStatus(RUNNING);
-        runningThread->increaseNumQuantums();
         contextSwitch(runningThread->getId());
 
         currentThreadId = runningThread->getId();
