@@ -19,7 +19,6 @@
 #define READY 1
 #define RUNNING 2
 #define BLOCKED 3
-#define TERMINATED 4
 
 // ------------------------------- methods ------------------------------
 using namespace std;
