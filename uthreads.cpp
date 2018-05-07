@@ -22,10 +22,9 @@
 
 static std::vector<Thread*> buf(MAX_THREAD_NUM); // changed it - not dynamic allocation
 static std::vector<Thread*> readyBuf;
-static int numThreads;
-static int currentThreadId;
-static int totalQuantumNum;
+static int numThreads, currentThreadId, totalQuantumNum;
 sigjmp_buf env[MAX_THREAD_NUM]; // ?
+sigset_t oldSet, newSet;
 
 //timer globals:
 struct sigaction sa;
@@ -128,7 +127,7 @@ int setTimer(int quantum_usecs) {
  * function with non-positive quantum_usecs.
  * Return value: On success, return 0. On failure, return -1.
 */
-int uthread_init(int quantum_usecs)
+int uthread_init(int quantum_usecs)     //todo: block signals
 {
     if (quantum_usecs <= 0) {
         std::cerr << ERR_FUNC_FAIL << "invalid quantum len was supplied.\n";
@@ -145,10 +144,15 @@ int uthread_init(int quantum_usecs)
     currentThreadId = 0;
     totalQuantumNum = 1; // "Right after the call to uthread_init, the value should be 1."
 
+    //init masking-signals buffers:
+    sigfillset(&newSet);
+    sigemptyset(&newSet);
+
     // set timer:
     if (setTimer(quantum_usecs) < 0) {
         return -1;
     }
+    return 0;
 }
 
 /*
@@ -169,14 +173,14 @@ int uthread_spawn(void (*f)(void))
         //assign id
         for (int i=0; i<MAX_THREAD_NUM; i++)
         {
-            if (buf[i] == NULL)
+            if (buf[i] == nullptr)
             {
                 tid = i;
             }
         }
 
         //f points to the starting point - pc - of the thread
-        Thread* t = new Thread(tid, f);
+        auto t = new Thread(tid, f);
         readyBuf.push_back(t); // not necessarily at tid - order of ready
         buf[tid] = t; // inserts thread in the minimal open tid, not end of line
         numThreads++;
@@ -207,13 +211,14 @@ void removeFromBuf(std::vector<Thread*> buffer, int tid)
  * Upon termination of a thread, informs all the threads that are synced to it.
  * @param tid
  */
-void informDependents(int tid)
+void informDependents(int terminatedId)
 {
     Thread* dependent;
-    for (int i = 0; i < buf[tid]->getDependentsNum(); i++) {
-        dependent = buf[tid]->popDependent();
+    for (int i = 0; i < buf[terminatedId]->getDependentsNum(); i++) {
+        dependent = buf[terminatedId]->popDependent();
         dependent->setStatus(READY);
         readyBuf.push_back(dependent);
+        // uthread_resume(dependent->getId()); --> spares code duplication, but calls sigprocmasc twice.
     }
 }
 
@@ -228,14 +233,12 @@ void informDependents(int tid)
  * terminated and -1 otherwise. If a thread terminates itself or the main
  * thread is terminated, the function does not return.
 */
-int uthread_terminate(int tid)
+int uthread_terminate(int tid)  //todo: block signals
 {
     // check validity of input
-    if (tid < 0 || tid > MAX_THREAD_NUM || !buf[tid]) {
-        std::cerr << ERR_FUNC_FAIL << "Invalid input.\n";
+    if (_idValidator(tid)) {
         return -1;
     }
-
     // terminated thread != main thread:
     else if (tid) {
         bool callScheduler = false;
@@ -245,6 +248,7 @@ int uthread_terminate(int tid)
         if (buf[tid]->getStatus() == READY) {
             removeFromBuf(readyBuf, tid);
         }
+        // if the thread terminates itself, a scheduling decision has to be made:
         else if (buf[tid]->getStatus() == RUNNING) {
             callScheduler = true;
         }
@@ -315,6 +319,17 @@ int uthread_block(int tid)
 */
 int uthread_resume(int tid)
 {
+    sigprocmask(SIG_SETMASK, &newSet, &oldSet); // block all signal todo: OK?
+    if (_idValidator(tid)) {
+        sigprocmask(SIG_SETMASK, &oldSet,  nullptr); // block all signal todo: OK?
+        return -1;
+    }
+    // make sure thread is not active to begin with:
+    if (!(buf[tid]->getStatus() == RUNNING || buf[tid]->getStatus() == READY)){
+        buf[tid]->setStatus(READY);
+        readyBuf.push_back(buf[tid]);
+    }
+    sigprocmask(SIG_SETMASK, &oldSet,  nullptr); // block all signal todo: OK?
     return 0;
 }
 
@@ -353,7 +368,7 @@ int uthread_sync(int tid)
 */
 int uthread_get_tid()
 {
-    return 0;
+    return buf[currentThreadId]->getId();
 }
 
 
@@ -383,5 +398,8 @@ int uthread_get_total_quantums()
 */
 int uthread_get_quantums(int tid)
 {
-    return 0;
+    if (_idValidator){
+        return -1;
+    }
+    return buf[tid]->getNumQuantums();
 }

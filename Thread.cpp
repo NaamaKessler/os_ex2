@@ -23,6 +23,7 @@ Thread::Thread(int tid, void (*f)(void))
     this->_status = READY;
     this->_sp = (address_t)this->_stack + STACK_SIZE - sizeof(address_t);
     this->_pc = (address_t)f;
+    this->_numQuantums = 0;
 }
 
 
@@ -44,6 +45,9 @@ int Thread::setStatus(int status)
     if (status == READY || status == RUNNING || status == BLOCKED)
     {
         this->_status = status;
+        if (status == RUNNING) {
+            this->_numQuantums++;
+        }
         return 0;
     }
     return -1;
@@ -98,4 +102,12 @@ Thread* Thread::popDependent() //todo: I removed the argument since it wasn't be
 int Thread::getDependentsNum()
 {
     return this->_dependencyQueue.size();
+}
+
+/**
+ * Returns the number of quantms the thread with ID tid was in RUNNING state.
+ */
+int Thread::getNumQuantums()
+{
+    return this->_numQuantums;
 }

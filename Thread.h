@@ -75,6 +75,11 @@ public:
      */
     int getDependentsNum();
 
+    /**
+     * Returns the number of quantms the thread with ID tid was in RUNNING state.
+     */
+    int getNumQuantums();
+
 private:
     int _tid;
     int _status;
@@ -82,6 +87,7 @@ private:
     queue<Thread*> _dependencyQueue;
     address_t _sp, _pc;
     sigjmp_buf _contextBuf;
+    int _numQuantums;
 
 };
 
