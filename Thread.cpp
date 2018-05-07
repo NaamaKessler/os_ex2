@@ -170,3 +170,8 @@ int Thread::getNumQuantums()
 {
     return this->_numQuantums;
 }
+
+void Thread::increaseNumQuantums()
+{
+    _numQuantums++;
+}

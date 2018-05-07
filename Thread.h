@@ -88,6 +88,8 @@ public:
      */
     int getNumQuantums();
 
+    void increaseNumQuantums();
+
 private:
     int _tid;
     int _status;

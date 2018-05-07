@@ -112,6 +112,7 @@ void scheduler(int state){
         runningThread = readyBuf.front();
         readyBuf.pop_front(); // pop just deletes the element
         runningThread->setStatus(RUNNING);
+        runningThread->increaseNumQuantums();
         contextSwitch(runningThread->getId());
 
         currentThreadId = runningThread->getId();
