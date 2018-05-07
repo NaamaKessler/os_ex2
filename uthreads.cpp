@@ -45,6 +45,8 @@ int initBuffer();
 int setTimer(int quantum_usecs);
 void removeFromBuf(std::deque<Thread*> buffer, int tid);
 void informDependents(int tid);
+int mask();
+int releaseMask();
 
 // ---------------------------- helper methods --------------------------------
 
@@ -70,6 +72,10 @@ int _idValidator(int tid) // copied from uthread_init
 void timeHandler(int sig){
     totalQuantumNum++;
     // call scheduler:
+    if (mask()){
+        // error
+        return;
+    }
     if (isReady){
         scheduler(READY); // scheduling decisions bc of timer - cur thread should switch to ready
     } else {
@@ -80,6 +86,10 @@ void timeHandler(int sig){
     // reset timer:
     if (setitimer (ITIMER_VIRTUAL, &timer, nullptr)) {
         std::cerr << ERR_SYS_CALL << "Resetting the virtual timer has failed.\n";
+    }
+    if (releaseMask()){
+        //error
+        return;
     }
 }
 
@@ -100,11 +110,10 @@ void scheduler(int state){
     // pop READY thread from readyBuf
     if (readyBuf.front()->getId() == 0)
     {
-        // main thread is ready+
+        // main thread is ready
         return;
     } else {
         // move old running thread to state
-        buf[uthread_get_tid()]->setStatus(state);
         buf[uthread_get_tid()]->setStatus(state);
         if (isReady){
             readyBuf.push_back(buf[uthread_get_tid()]);
@@ -123,12 +132,12 @@ void scheduler(int state){
 void contextSwitch(int tid){
     // save environment
     int ret_val = sigsetjmp(*(buf[uthread_get_tid()]->getEnvironment()),1);
-    if (ret_val == 1) {
+    if (ret_val == 2) {
         return;
     }
 
     // load environment
-    siglongjmp(*(buf[tid]->getEnvironment()),1);
+    siglongjmp(*(buf[tid]->getEnvironment()),2);
 }
 
 
@@ -225,8 +234,10 @@ void informDependents(int terminatedId)
     Thread* dependent;
     for (int i = 0; i < buf[terminatedId]->getDependentsNum(); i++) {
         dependent = buf[terminatedId]->popDependent();
-        dependent->setStatus(READY);
-        readyBuf.push_back(dependent);
+        if (!(dependent->getBlockedNoSync())){
+            dependent->setStatus(READY);
+            readyBuf.push_back(dependent);
+        }
     }
 }
 
@@ -258,7 +269,7 @@ int uthread_init(int quantum_usecs)
     buf[0] = new Thread(0, nullptr, STACK_SIZE);
     leakage_count++;
     buf[0]->setStatus(RUNNING);
-//    readyBuf.push_back(buf[0]); //todo: Is that needed?
+    readyBuf.push_back(buf[0]); //todo: Is that needed?
     numThreads = 1;
     currentThreadId = 0;
     totalQuantumNum = 1; // "Right after the call to uthread_init, the value should be 1."
@@ -418,6 +429,7 @@ int uthread_block(int tid)
 
     // set state
     buf[tid]->setStatus(BLOCKED);
+    buf[tid]->setBlockedNoSync(true);
 
     // a thread blocks itself - call scheduler
     if (tid == uthread_get_tid()) {
@@ -446,6 +458,7 @@ int uthread_resume(int tid)
     // make sure thread is not active to begin with:
     if (!(buf[tid]->getStatus() == RUNNING || buf[tid]->getStatus() == READY)){
         buf[tid]->setStatus(READY);
+        buf[tid]->setBlockedNoSync(false);
         readyBuf.push_back(buf[tid]);
     }
     if (releaseMask()){
@@ -467,11 +480,13 @@ int uthread_sync(int tid)
     // the running thread is calling this func - currentThreadId
 
     // block current thread
-    if (_idValidator(tid) || uthread_block(uthread_get_tid()) == -1 || mask())
+    if (_idValidator(tid) || mask())
     {
         // uthread_block will return an error if tid==0
         return -1;
     }
+
+    buf.at(uthread_get_tid())->setStatus(BLOCKED);
 
     // current thread should wait until tid finishes its job
     buf.at(tid)->pushDependent(buf.at(uthread_get_tid()));

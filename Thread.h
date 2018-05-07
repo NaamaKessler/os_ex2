@@ -90,14 +90,19 @@ public:
 
     void increaseNumQuantums();
 
+    void setBlockedNoSync(bool flag);
+
+    bool getBlockedNoSync();
+
 private:
     int _tid;
     int _status;
-    char _stack[];
+    char* _stack;
     queue<Thread*> _dependencyQueue;
     //address_t _sp, _pc;
     sigjmp_buf _contextBuf;
     int _numQuantums;
+    bool blockedNoSync;
 
 };
 

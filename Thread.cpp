@@ -58,13 +58,15 @@ address_t translate_address(address_t addr)
 Thread::Thread(int tid, void (*f)(void), int stackSize)
 {
     address_t sp, pc;
+    this->blockedNoSync = false;
     this->_tid = tid;
     this->_dependencyQueue =*(new std::queue<Thread*>);
     this->_status = READY;
     this->_stack = new char[stackSize];
+    this->_numQuantums = 0;
     sp = (address_t)this->_stack + stackSize - sizeof(address_t);
     pc = (address_t)f;
-    this->_numQuantums = 0;
+    sigsetjmp(this->_contextBuf, 1);
     (this->_contextBuf->__jmpbuf)[JB_SP] = translate_address(sp);
     (this->_contextBuf->__jmpbuf)[JB_PC] = translate_address(pc);
     sigemptyset(&_contextBuf->__saved_mask);
@@ -78,6 +80,15 @@ Thread::~Thread()
     free(this->_stack);
 }
 
+void Thread::setBlockedNoSync(bool flag)
+{
+    this->blockedNoSync = flag;
+}
+
+bool Thread::getBlockedNoSync()
+{
+    return this->blockedNoSync;
+}
 
 /**
  * @return Thread ID
