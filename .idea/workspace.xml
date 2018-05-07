@@ -13,7 +13,6 @@
   <component name="ChangeListManager">
     <list default="true" id="4e3a32ee-88f0-4336-b776-a0de68b20bf3" name="Default" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/uthreads.cpp" afterPath="$PROJECT_DIR$/uthreads.cpp" />
     </list>
     <ignored path="$PROJECT_DIR$/cmake-build-debug/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -172,7 +171,7 @@
       <workItem from="1525513962431" duration="6000" />
       <workItem from="1525617547820" duration="4640000" />
       <workItem from="1525673833261" duration="1404000" />
-      <workItem from="1525678828573" duration="1036000" />
+      <workItem from="1525678828573" duration="1064000" />
     </task>
     <task id="LOCAL-00001" summary="Merge branch 'master' of https://github.com/NaamaKessler/os_ex2&#10;&#10;# Conflicts:&#10;#&#9;.idea/workspace.xml">
       <created>1525172582581</created>
@@ -188,15 +187,21 @@
       <option name="project" value="LOCAL" />
       <updated>1525675184748</updated>
     </task>
-    <option name="localTasksCounter" value="3" />
+    <task id="LOCAL-00003" summary="Merge branch 'master' of https://github.com/NaamaKessler/os_ex2&#10;&#10;# Conflicts:&#10;#&#9;.idea/workspace.xml">
+      <created>1525679886203</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1525679886203</updated>
+    </task>
+    <option name="localTasksCounter" value="4" />
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="29649000" />
+    <option name="totallyTimeSpent" value="29677000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="-8" y="-8" width="1382" height="744" extended-state="6" />
-    <editor active="true" />
     <layout>
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.22239032" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
