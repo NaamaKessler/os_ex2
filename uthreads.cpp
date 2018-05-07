@@ -154,9 +154,10 @@ int uthread_init(int quantum_usecs)     //todo: block signals
         std::cerr << ERR_FUNC_FAIL << "invalid quantum len was supplied.\n";
         return -1;
     }
-
+    sigprocmask(SIG_BLOCK, &newSet, &oldSet);
     // initialize variables and create an object from the main thread:
     if (initBuffer() < 0) {
+        sigprocmask(SIG_SETMASK, &oldSet,  nullptr);
         return -1;
     }
     buf[0] = new Thread(0, nullptr);    //todo: how to set entry point to the main thread?
@@ -166,13 +167,16 @@ int uthread_init(int quantum_usecs)     //todo: block signals
     totalQuantumNum = 1; // "Right after the call to uthread_init, the value should be 1."
 
     //init masking-signals buffers:
-    sigfillset(&newSet);
+    sigemptyset(&newSet);
+    sigaddset(&newSet, SIGVTALRM);
     sigemptyset(&newSet);
 
     // set timer:
     if (setTimer(quantum_usecs) < 0) {
+        sigprocmask(SIG_SETMASK, &oldSet,  nullptr);
         return -1;
     }
+    sigprocmask(SIG_SETMASK, &oldSet,  nullptr);
     return 0;
 }
 
@@ -191,6 +195,7 @@ int uthread_spawn(void (*f)(void))
     int tid = -1;
     if (numThreads < MAX_THREAD_NUM)
     {
+        sigprocmask(SIG_BLOCK, &newSet, &oldSet);
         //assign id
         for (int i=0; i<MAX_THREAD_NUM; i++)
         {
@@ -205,6 +210,7 @@ int uthread_spawn(void (*f)(void))
         readyBuf.push_back(t); // not necessarily at tid - order of ready
         buf[tid] = t; // inserts thread in the minimal open tid, not end of line
         numThreads++;
+        sigprocmask(SIG_SETMASK, &oldSet,  nullptr);
     }
     if (tid == -1){
         std::cerr << ERR_FUNC_FAIL << "Number of threads exceeds limit.\n";
@@ -265,12 +271,13 @@ void informDependents(int terminatedId)
 */
 int uthread_terminate(int tid)  //todo: block signals
 {
-    // check validity of input
+    // check validity of input:
     if (_idValidator(tid)) {
         return -1;
     }
+    sigprocmask(SIG_BLOCK, &newSet, &oldSet);
     // terminated thread != main thread:
-    else if (tid) {
+    if (tid) {
         bool callScheduler = false;
         // inform all depending threads:
         informDependents(tid);
@@ -289,6 +296,7 @@ int uthread_terminate(int tid)  //todo: block signals
         if (callScheduler){
             //call scheduler.
         }
+        sigprocmask(SIG_SETMASK, &oldSet,  nullptr);
         return 0;
     }
     // terminate the main thread:
@@ -300,6 +308,7 @@ int uthread_terminate(int tid)  //todo: block signals
         deque<Thread*> dummy_2;
         buf.swap(dummy_1);
         readyBuf.swap(dummy_2);
+        sigprocmask(SIG_SETMASK, &oldSet,  nullptr);
         exit(0);
     }
 }
@@ -321,9 +330,10 @@ int uthread_block(int tid)
     // check id validity
     if (tid == 0 || _idValidator(tid)==-1)
     {
+
         return -1;
     }
-
+    sigprocmask(SIG_BLOCK, &newSet, &oldSet);
     bool callScheduler = false;
 
     // remove from ready
@@ -334,7 +344,7 @@ int uthread_block(int tid)
 
     // a thread blocks itself - call scheduler
     buf[tid]->setStatus(BLOCKED);
-
+    sigprocmask(SIG_SETMASK, &oldSet,  nullptr);
     return 0;
 }
 
@@ -350,17 +360,16 @@ int uthread_block(int tid)
 */
 int uthread_resume(int tid)
 {
-    sigprocmask(SIG_SETMASK, &newSet, &oldSet); // block all signal todo: OK?
     if (_idValidator(tid)) {
-        sigprocmask(SIG_SETMASK, &oldSet,  nullptr); // block all signal todo: OK?
         return -1;
     }
+    sigprocmask(SIG_BLOCK, &newSet, &oldSet);
     // make sure thread is not active to begin with:
     if (!(buf[tid]->getStatus() == RUNNING || buf[tid]->getStatus() == READY)){
         buf[tid]->setStatus(READY);
         readyBuf.push_back(buf[tid]);
     }
-    sigprocmask(SIG_SETMASK, &oldSet,  nullptr); // block all signal todo: OK?
+    sigprocmask(SIG_SETMASK, &oldSet,  nullptr);
     return 0;
 }
 
@@ -381,7 +390,7 @@ int uthread_sync(int tid)
     {
         return -1;
     }
-
+    sigprocmask(SIG_BLOCK, &newSet, &oldSet);
     // current thread should wait until tid finishes its job
     buf.at(uthread_get_tid())->pushDependent(buf.at(tid));
 
@@ -390,7 +399,7 @@ int uthread_sync(int tid)
 
     // todo: handle errors - main thread
 
-
+    sigprocmask(SIG_SETMASK, &oldSet,  nullptr);
     return 0;
 }
 
