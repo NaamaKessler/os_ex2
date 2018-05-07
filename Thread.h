@@ -35,6 +35,11 @@ public:
     Thread(int tid, void (*f)(void), int stackSize);
 
     /**
+     * Destructor.
+     */
+    ~Thread();
+
+    /**
      * @return Thread ID
      */
     int getId();

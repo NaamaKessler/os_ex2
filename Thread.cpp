@@ -70,6 +70,14 @@ Thread::Thread(int tid, void (*f)(void), int stackSize)
     sigemptyset(&_contextBuf->__saved_mask);
 }
 
+/**
+ * Destructor.
+ */
+Thread::~Thread()
+{
+    free(this->_stack);
+}
+
 
 /**
  * @return Thread ID
