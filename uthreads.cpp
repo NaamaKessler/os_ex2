@@ -11,12 +11,13 @@
 #include <vector>
 #include <algorithm>
 #include <signal.h>
+#include <assert.h>.
 #include "uthreads.h"
 #include "Thread.h"
 
 #define ERR_FUNC_FAIL "thread library error: "
 #define ERR_SYS_CALL "system error: "
-
+// NDEBUG //todo
 
 // ------------------------------- globals ------------------------------
 
@@ -71,6 +72,7 @@ void timeHandler(int sig){
     totalQuantumNum++;
 
     // call scheduler
+
     scheduler(READY); // scheduling decisions bc of timer - cur thread should switch to ready
 
     // reset timer
@@ -89,11 +91,7 @@ void scheduler(int state){
 
     Thread *runningThread;
 
-    // check if readyBuf is empty
-    if (readyBuf.empty()){
-        // error?
-        return;
-    }
+    assert (state == READY || state == RUNNING || state == BLOCKED);
 
     // get id of new running thread
 
@@ -104,7 +102,7 @@ void scheduler(int state){
         return;
     } else {
         // move old running thread to state
-        buf[uthread_get_tid()]->setStatus(state); // todo: check input validity?
+        buf[uthread_get_tid()]->setStatus(state); 
         switch (state){
             case READY:
                 readyBuf.push_back(buf[uthread_get_tid()]);
@@ -405,10 +403,8 @@ int uthread_block(int tid)
     // check id validity
     if (tid == 0 || _idValidator(tid)==-1 || mask())
     {
-
         return -1;
     }
-    bool callScheduler = false;
 
     // remove from ready
     if (buf[tid]->getStatus() == READY)
@@ -470,11 +466,11 @@ int uthread_sync(int tid)
     // the running thread is calling this func - currentThreadId
 
     // block current thread
-    if (uthread_block(uthread_get_tid()) == -1 || mask())
+    if (_idValidator(tid) || uthread_block(uthread_get_tid()) == -1 || mask())
     {
+        // uthread_block will return an error if tid==0
         return -1;
     }
-
 
     // current thread should wait until tid finishes its job
     buf.at(tid)->pushDependent(buf.at(uthread_get_tid()));
@@ -482,9 +478,6 @@ int uthread_sync(int tid)
     // RUNNING thread transitions to the BLOCKED state
     //scheduling decision should be made
     scheduler(BLOCKED);
-
-
-    // todo: handle errors - main thread
 
     if (releaseMask()){
         return -1;
@@ -499,7 +492,7 @@ int uthread_sync(int tid)
 */
 int uthread_get_tid()
 {
-    return buf[currentThreadId]->getId();
+    return currentThreadId;
 }
 
 
