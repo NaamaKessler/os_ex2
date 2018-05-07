@@ -43,18 +43,27 @@ void scheduler(int sig);
 void contextSwitch(int tid);
 int initBuffer();
 int setTimer(int quantum_usecs);
-void removeFromBuf(std::deque<Thread*> buffer, int tid);
+void removeFromBuf(std::deque<Thread*> * buffer, int tid);
 void informDependents(int tid);
 int mask();
 int releaseMask();
 
 // ---------------------------- helper methods --------------------------------
 
+void printBuf(){
+    cout << "readyBuf size is: " << readyBuf.size() << "\n";
+    for (int i=0; i<readyBuf.size(); i++){
+        cout << "readyBuf[" << i << "]: " << readyBuf.at(i)->getId() << "\n";
+    }
+}
+
+
 /**
  * check validity of tid.
  */
 int _idValidator(int tid) // copied from uthread_init
 {
+    cout << "_idValidator\n";
     // check validity of input
     if (tid < 0 || tid > MAX_THREAD_NUM || !buf[tid]) {
         std::cerr << ERR_FUNC_FAIL << "Invalid input.\n";
@@ -70,6 +79,9 @@ int _idValidator(int tid) // copied from uthread_init
  * @param sig
  */
 void timeHandler(int sig){
+    cout << "timeHandler\n";
+    //printBuf();
+    //cout << "0 readyBuf size is: " << readyBuf.size() << "\n";
     totalQuantumNum++;
     // call scheduler:
     if (mask()){
@@ -93,11 +105,14 @@ void timeHandler(int sig){
     }
 }
 
+
 /**
  *
  * @param state - state to move the current thread to
  */
 void scheduler(int state){
+    cout << "scheduler\n";
+    //cout << "1 readyBuf size is: " << readyBuf.size() << "\n";
     // determine who's running next: moves current thread to READY,
     // pops from ready into RUNNING. Calls context switch.
 
@@ -105,31 +120,41 @@ void scheduler(int state){
 
     assert (state == READY || state == RUNNING || state == BLOCKED);
 
+
     // get id of new running thread
 
+
     // pop READY thread from readyBuf
-    if (readyBuf.front()->getId() == 0)
+    if (readyBuf.size() == 0)
     {
         // main thread is ready
         return;
     } else {
         // move old running thread to state
-        buf[uthread_get_tid()]->setStatus(state);
-        if (isReady){
+
+//        if (isReady){
+        if (buf.at(uthread_get_tid())->getStatus() == RUNNING){
             readyBuf.push_back(buf[uthread_get_tid()]);
         }
+
+        buf[uthread_get_tid()]->setStatus(state);
+        printBuf();
         // pop new running thread from ready to running
         runningThread = readyBuf.front();
         readyBuf.pop_front(); // pop just deletes the element
         runningThread->setStatus(RUNNING);
+        currentThreadId = runningThread->getId();
+        cout << "current thread: " << currentThreadId << "\n";
         contextSwitch(runningThread->getId());
 
-        currentThreadId = runningThread->getId();
+
 
     }
+    cout << "finished scheduler \n";
 }
 
 void contextSwitch(int tid){
+    cout << "contextSwitch\n";
     // save environment
     int ret_val = sigsetjmp(*(buf[uthread_get_tid()]->getEnvironment()),1);
     if (ret_val == 2) {
@@ -162,7 +187,7 @@ int initBuffer() {
  * Sets a virtual timer with the time interval quantum_usecs.
  */
 int setTimer(int quantum_usecs) {
-
+    cout << "setTimer\n";
     //set timer handler:
 //    sa.sa_handler = &scheduler;
     sa.sa_handler = &timeHandler;
@@ -192,6 +217,7 @@ int setTimer(int quantum_usecs) {
  * @return 0 on success, -1 on failure.
  */
 int mask(){
+    cout << "mask\n";
     if (sigprocmask(SIG_BLOCK, &newSet, &oldSet)){
         std::cerr << ERR_SYS_CALL << "Masking failed.\n";
         return -1;
@@ -204,6 +230,7 @@ int mask(){
  * @return 0 on success, -1 on failure.
  */
 int releaseMask(){
+    cout << "releaseMask\n";
     if (sigprocmask(SIG_SETMASK, &oldSet,  nullptr)){
         std::cerr << ERR_SYS_CALL << "Un-masking failed.\n";
         return -1;
@@ -216,11 +243,13 @@ int releaseMask(){
  * @param buffer
  * @param tid
  */
-void removeFromBuf(std::deque<Thread*> buffer, int tid)
+void removeFromBuf(std::deque<Thread*>* buffer, int tid)
 {
-    for (unsigned int idx = 0; idx < buffer.size(); idx++) {
-        if (buffer[idx]->getId() == tid) {
-            buffer.erase(buffer.begin() + idx);
+    cout << "removeFromBuf\n";
+    for (unsigned int idx = 0; idx < buffer->size(); idx++) {
+        if (buffer->at(idx)->getId() == tid) {
+            buffer->erase(buffer->begin() + idx);
+            //cout << "buffer size is: " << buffer->size() << "\n";
         }
     }
 }
@@ -231,6 +260,7 @@ void removeFromBuf(std::deque<Thread*> buffer, int tid)
  */
 void informDependents(int terminatedId)
 {
+    cout << "informDependents\n";
     Thread* dependent;
     for (int i = 0; i < buf[terminatedId]->getDependentsNum(); i++) {
         dependent = buf[terminatedId]->popDependent();
@@ -254,11 +284,9 @@ void informDependents(int terminatedId)
 */
 int uthread_init(int quantum_usecs)
 {
+    cout << "uthread_init\n";
     if (quantum_usecs <= 0) {
         std::cerr << ERR_FUNC_FAIL << "invalid quantum len was supplied.\n";
-        return -1;
-    }
-    if (mask()){
         return -1;
     }
     // initialize variables and create an object from the main thread:
@@ -269,7 +297,7 @@ int uthread_init(int quantum_usecs)
     buf[0] = new Thread(0, nullptr, STACK_SIZE);
     leakage_count++;
     buf[0]->setStatus(RUNNING);
-    readyBuf.push_back(buf[0]); //todo: Is that needed?
+    //readyBuf.push_back(buf[0]); //todo: Is that needed?
     numThreads = 1;
     currentThreadId = 0;
     totalQuantumNum = 1; // "Right after the call to uthread_init, the value should be 1."
@@ -287,9 +315,6 @@ int uthread_init(int quantum_usecs)
         sigprocmask(SIG_SETMASK, &oldSet,  nullptr);
         return -1;
     }
-    if (releaseMask()){
-        return -1;
-    }
     return 0;
 }
 
@@ -305,6 +330,7 @@ int uthread_init(int quantum_usecs)
 */
 int uthread_spawn(void (*f)(void))
 {
+    cout << "uthread_spawn\n";
     int tid = -1;
     if (numThreads < MAX_THREAD_NUM)
     {
@@ -334,6 +360,7 @@ int uthread_spawn(void (*f)(void))
     if (tid == -1){
         std::cerr << ERR_FUNC_FAIL << "Number of threads exceeds limit.\n";
     }
+    cout << "spawned: " << tid << "\n";
     return tid;
 
 }
@@ -353,6 +380,7 @@ int uthread_spawn(void (*f)(void))
 */
 int uthread_terminate(int tid)  //todo: block signals
 {
+    cout << "uthread_terminate\n";
     // check validity of input:
     if (_idValidator(tid) || mask()) {
         return -1;
@@ -364,7 +392,10 @@ int uthread_terminate(int tid)  //todo: block signals
         informDependents(tid);
         // pop out of ready list:
         if (buf[tid]->getStatus() == READY) {
-            removeFromBuf(readyBuf, tid);
+            //cout << "1 readyBuf size: " << readyBuf.size() << "\n";
+            removeFromBuf(&readyBuf, tid);
+            //cout << "removed: " << buf[tid]->getId() << "\n";
+            //cout << "2 readyBuf size: " << readyBuf.size() << "\n";
         }
         // if the thread terminates itself, a scheduling decision has to be made:
         else if (buf[tid]->getStatus() == RUNNING) {
@@ -418,13 +449,14 @@ int uthread_terminate(int tid)  //todo: block signals
 */
 int uthread_block(int tid)
 {
+    cout << "uthread_block\n";
     // check id validity and mask:
     if (tid == 0 || _idValidator(tid)==-1 || mask()) {
         return -1;
     }
     // remove from ready:
     if (buf[tid]->getStatus() == READY) {
-        removeFromBuf(readyBuf, tid);
+        removeFromBuf(&readyBuf, tid);
     }
 
     // set state
@@ -452,6 +484,7 @@ int uthread_block(int tid)
 */
 int uthread_resume(int tid)
 {
+    cout << "uthread_resume\n";
     if (_idValidator(tid) || mask()) {
         return -1;
     }
@@ -477,6 +510,7 @@ int uthread_resume(int tid)
 */
 int uthread_sync(int tid)
 {
+    cout << "uthread_sync\n";
     // the running thread is calling this func - currentThreadId
 
     // block current thread
@@ -487,6 +521,7 @@ int uthread_sync(int tid)
     }
 
     buf.at(uthread_get_tid())->setStatus(BLOCKED);
+    isReady = false;
 
     // current thread should wait until tid finishes its job
     buf.at(tid)->pushDependent(buf.at(uthread_get_tid()));
@@ -508,6 +543,7 @@ int uthread_sync(int tid)
 */
 int uthread_get_tid()
 {
+    cout << "uthread_get_tid\n";
     return currentThreadId;
 }
 
@@ -522,6 +558,7 @@ int uthread_get_tid()
 */
 int uthread_get_total_quantums()
 {
+    cout << "uthread_get_total_quantums\n";
     return totalQuantumNum;
 }
 
@@ -538,6 +575,7 @@ int uthread_get_total_quantums()
 */
 int uthread_get_quantums(int tid)
 {
+    cout << "uthread_get_quantums\n";
     if (_idValidator(tid)){
         return -1;
     }
