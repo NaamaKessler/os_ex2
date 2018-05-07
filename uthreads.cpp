@@ -355,8 +355,8 @@ int uthread_terminate(int tid)  //todo: block signals
         }
         // delete thread:
         delete buf[tid];
-        leakage_count--; //todo: REMOVE
         buf[tid] = nullptr;
+        leakage_count--; //todo: REMOVE
         numThreads--;
         if (callScheduler){
             isReady = false;
