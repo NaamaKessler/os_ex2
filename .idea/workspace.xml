@@ -13,7 +13,6 @@
   <component name="ChangeListManager">
     <list default="true" id="4e3a32ee-88f0-4336-b776-a0de68b20bf3" name="Default" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/uthreads.cpp" afterPath="$PROJECT_DIR$/uthreads.cpp" />
     </list>
     <ignored path="$PROJECT_DIR$/cmake-build-debug/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -303,7 +302,7 @@
       <workItem from="1525617547820" duration="4640000" />
       <workItem from="1525673833261" duration="1404000" />
       <workItem from="1525678828573" duration="10128000" />
-      <workItem from="1525705829231" duration="1331000" />
+      <workItem from="1525705829231" duration="1366000" />
     </task>
     <task id="LOCAL-00001" summary="Merge branch 'master' of https://github.com/NaamaKessler/os_ex2&#10;&#10;# Conflicts:&#10;#&#9;.idea/workspace.xml">
       <created>1525172582581</created>
@@ -417,11 +416,18 @@
       <option name="project" value="LOCAL" />
       <updated>1525707306648</updated>
     </task>
-    <option name="localTasksCounter" value="17" />
+    <task id="LOCAL-00017" summary="Merge branch 'master' of https://github.com/NaamaKessler/os_ex2&#10;&#10;# Conflicts:&#10;#&#9;.idea/workspace.xml">
+      <created>1525707427025</created>
+      <option name="number" value="00017" />
+      <option name="presentableId" value="LOCAL-00017" />
+      <option name="project" value="LOCAL" />
+      <updated>1525707427025</updated>
+    </task>
+    <option name="localTasksCounter" value="18" />
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="40072000" />
+    <option name="totallyTimeSpent" value="40107000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="-8" y="-8" width="1382" height="744" extended-state="6" />
