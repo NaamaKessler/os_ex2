@@ -30,9 +30,26 @@ sigset_t oldSet, newSet;
 struct sigaction sa;
 static struct itimerval timer;
 
-// ---------- buf;--------------------- methods ------------------------------
 
+// -------------------------- inner funcs ------------------------------
 
+// declarations so we can keep up with our funcs
+int _idValidator(int tid);
+void timeHandler(int sig);
+void scheduler(int sig);
+void contextSwitch(int tid);
+int initBuffer();
+int setTimer(int quantum_usecs);
+void removeFromBuf(std::vector<Thread*> buffer, int tid);
+void informDependents(int tid);
+
+// ---------------------------- methods --------------------------------
+
+// todo: block signals
+
+/**
+ * check validity of tid.
+ */
 int _idValidator(int tid) // copied from uthread_init
 {
     // check validity of input
@@ -58,18 +75,18 @@ void timeHandler(int sig){
 
 void scheduler(int sig){
     // determine who's running next
-
+    //update currentThreadID
 }
 
 void contextSwitch(int tid){
-    // buffs
-    int ret_val = sigsetjmp(env[currentThreadId],1);
+    // save environment
+    int ret_val = sigsetjmp(*(buf[uthread_get_tid()]->getEnvironment()),1);
     if (ret_val == 1) {
         return;
     }
 
-    siglongjmp(env[currentThreadId],1);
-    // todo:  not done
+    // load environment
+    siglongjmp(*(buf[tid]->getEnvironment()),1);
 }
 
 
@@ -346,18 +363,20 @@ int uthread_sync(int tid)
     // the running thread is calling this func - currentThreadId
 
     // block current thread
-    if (uthread_block(currentThreadId) == -1)
+    if (uthread_block(uthread_get_tid()) == -1)
     {
         return -1;
     }
 
-    // currentThreadId should wait until tid finishes its job
-    buf.at(currentThreadId)->pushDependent(buf.at(tid));
+    // current thread should wait until tid finishes its job
+    buf.at(uthread_get_tid())->pushDependent(buf.at(tid));
 
 
     //todo: scheduling decision - move to running. scheduler?
 
     // todo: handle errors - main thread
+
+
     return 0;
 }
 
