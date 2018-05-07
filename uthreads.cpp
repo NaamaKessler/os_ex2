@@ -64,21 +64,62 @@ int _idValidator(int tid) // copied from uthread_init
 
 /**
  * times up -> signal -> time handler is called:
- * 1. contextSwitch (handles env)
- * 2. Scheduler (handles buf & states)
+ * calls Scheduler (handles buf & states), that calls contextSwitch (handles env)
  * @param sig
  */
 void timeHandler(int sig){
     totalQuantumNum++;
+
     // call scheduler
-    // call context switch
+    scheduler(READY); // scheduling decisions bc of timer - cur thread should switch to ready
+
+    // reset timer
+    if (setitimer (ITIMER_VIRTUAL, &timer, nullptr)) {
+        std::cerr << ERR_SYS_CALL << "Resetting the virtual timer has failed.\n";
+    }
 }
 
-void scheduler(int sig){
-    // determine who's running next
-    //update currentThreadID
-    if (!readyBuf.empty()){
-        readyBuf.
+/**
+ *
+ * @param state - state to move the current thread to
+ */
+void scheduler(int state){
+    // determine who's running next: moves current thread to READY,
+    // pops from ready into RUNNING. Calls context switch.
+
+    Thread *runningThread;
+
+    // check if readyBuf is empty
+    if (readyBuf.empty()){
+        // error?
+        return;
+    }
+
+    // get id of new running thread
+
+    // pop READY thread from readyBuf
+    if (readyBuf.front()->getId() == 0)
+    {
+        // main thread is ready
+        return;
+    } else {
+        // move old running thread to state
+        buf[uthread_get_tid()]->setStatus(state); // todo: check input validity?
+        switch (state){
+            case READY:
+                readyBuf.push_back(buf[uthread_get_tid()]);
+                return;
+            case BLOCKED:
+                return;
+            }
+        // pop new running thread from ready to running
+        runningThread = readyBuf.front();
+        readyBuf.pop_front(); // pop just deletes the element
+        runningThread->setStatus(RUNNING);
+        contextSwitch(runningThread->getId());
+
+        currentThreadId = runningThread->getId();
+
     }
 }
 
@@ -325,8 +366,6 @@ int uthread_terminate(int tid)  //todo: block signals
 */
 int uthread_block(int tid)
 {
-    //todo: scheduling decision - change running? scheduler?
-
     // check id validity
     if (tid == 0 || _idValidator(tid)==-1)
     {
@@ -342,8 +381,15 @@ int uthread_block(int tid)
         removeFromBuf(readyBuf, tid);
     }
 
-    // a thread blocks itself - call scheduler
+    // set state
     buf[tid]->setStatus(BLOCKED);
+
+    // a thread blocks itself - call scheduler
+    if (tid == uthread_get_tid())
+    {
+        scheduler(BLOCKED);
+    }
+
     sigprocmask(SIG_SETMASK, &oldSet,  nullptr);
     return 0;
 }
@@ -391,8 +437,15 @@ int uthread_sync(int tid)
         return -1;
     }
     sigprocmask(SIG_BLOCK, &newSet, &oldSet);
+
     // current thread should wait until tid finishes its job
-    buf.at(uthread_get_tid())->pushDependent(buf.at(tid));
+    buf.at(tid)->pushDependent(buf.at(uthread_get_tid()));
+
+    // RUNNING thread transitions to the BLOCKED state
+    //scheduling decision should be made
+    scheduler(BLOCKED);
+
+
 
 
     //todo: scheduling decision - move to running. scheduler?
