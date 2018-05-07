@@ -299,11 +299,12 @@ int uthread_spawn(void (*f)(void))
             return -1;
         }
         //assign id
-        for (int i=0; i<MAX_THREAD_NUM; i++)
+        for (int i=1; i<MAX_THREAD_NUM; i++)
         {
             if (buf[i] == nullptr)
             {
                 tid = i;
+                break;
             }
         }
 
