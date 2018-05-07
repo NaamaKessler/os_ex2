@@ -26,6 +26,7 @@ static std::deque<Thread*> readyBuf;
 static int numThreads, currentThreadId, totalQuantumNum;
 sigjmp_buf env[MAX_THREAD_NUM]; // ?
 sigset_t oldSet, newSet;
+int handlerOrigin; // state of the currently running thread , before timeHandler is called.
 
 //timer globals:
 struct sigaction sa;
@@ -45,7 +46,7 @@ void removeFromBuf(std::vector<Thread*> buffer, int tid);
 void removeFromBuf(std::deque<Thread*> buffer, int tid);
 void informDependents(int tid);
 
-// ---------------------------- methods --------------------------------
+// ---------------------------- helper methods --------------------------------
 
 // todo: block signals
 
@@ -107,7 +108,7 @@ void scheduler(int state){
             case READY:
                 readyBuf.push_back(buf[uthread_get_tid()]);
                 return;
-            case BLOCKED:
+            default:
                 return;
             }
         // pop new running thread from ready to running
@@ -157,7 +158,7 @@ int setTimer(int quantum_usecs) {
 
     //set timer handler:
 //    sa.sa_handler = &scheduler;
-    sa.sa_handler = &timeHandler;
+    sa.sa_handler = &timeHandler();
     if (sigaction(SIGVTALRM, &sa, nullptr) < 0) {
         std::cerr << ERR_SYS_CALL << "sigaction has failed.\n";     //todo: change.
         return -1;
@@ -199,6 +200,38 @@ int releaseMask(){
         return -1;
     }
 }
+
+/**
+ * Remove thread from the specified buffer by ID.
+ * @param buffer
+ * @param tid
+ */
+void removeFromBuf(std::deque<Thread*> buffer, int tid)
+{
+    for (int idx = 0; idx < buffer.size(); idx++) {
+        if (buffer[idx]->getId() == tid) {
+            buffer.erase(buffer.begin() + idx);
+        }
+    }
+}
+
+/**
+ * Upon termination of a thread, informs all the threads that are synced to it.
+ * @param tid
+ */
+void informDependents(int terminatedId)
+{
+    Thread* dependent;
+    for (int i = 0; i < buf[terminatedId]->getDependentsNum(); i++) {
+        dependent = buf[terminatedId]->popDependent();
+        dependent->setStatus(READY);
+        readyBuf.push_back(dependent);
+        // uthread_resume(dependent->getId()); --> spares code duplication, but calls sigprocmasc twice.
+    }
+}
+
+
+// ---------------------------- library methods --------------------------------
 
 /*
  * Description: This function initializes the thread library.
@@ -292,43 +325,6 @@ int uthread_spawn(void (*f)(void))
 }
 
 
-/**
- * Remove thread from the specified buffer by ID.
- * @param buffer
- * @param tid
- */
-void removeFromBuf(std::vector<Thread*> buffer, int tid)
-{
-    for (int idx = 0; idx < buffer.size(); idx++) {
-        if (buffer[idx]->getId() == tid) {
-            buffer.erase(buffer.begin() + idx);
-        }
-    }
-}
-
-void removeFromBuf(std::deque<Thread*> buffer, int tid)
-{
-    for (int idx = 0; idx < buffer.size(); idx++) {
-        if (buffer[idx]->getId() == tid) {
-            buffer.erase(buffer.begin() + idx);
-        }
-    }
-}
-
-/**
- * Upon termination of a thread, informs all the threads that are synced to it.
- * @param tid
- */
-void informDependents(int terminatedId)
-{
-    Thread* dependent;
-    for (int i = 0; i < buf[terminatedId]->getDependentsNum(); i++) {
-        dependent = buf[terminatedId]->popDependent();
-        dependent->setStatus(READY);
-        readyBuf.push_back(dependent);
-        // uthread_resume(dependent->getId()); --> spares code duplication, but calls sigprocmasc twice.
-    }
-}
 
 /*
  * Description: This function terminates the thread with ID tid and deletes
@@ -365,7 +361,7 @@ int uthread_terminate(int tid)  //todo: block signals
         buf[tid] = nullptr;
         numThreads--;
         if (callScheduler){
-            //call scheduler.
+            timeHandler(BLOCKED);
         }
         if (releaseMask()){
             return -1;
