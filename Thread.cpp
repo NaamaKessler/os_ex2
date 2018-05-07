@@ -57,14 +57,16 @@ address_t translate_address(address_t addr)
  */
 Thread::Thread(int tid, void (*f)(void), int stackSize)
 {
+    address_t sp, pc;
     this->_tid = tid;
     this->_dependencyQueue =*(new std::queue<Thread*>);
     this->_status = READY;
-    this->_sp = (address_t)this->_stack + stackSize - sizeof(address_t);
-    this->_pc = (address_t)f;
+    this->_stack = new char[stackSize];
+    sp = (address_t)this->_stack + stackSize - sizeof(address_t);
+    pc = (address_t)f;
     this->_numQuantums = 0;
-    (this->_contextBuf->__jmpbuf)[JB_SP] = translate_address(_sp);
-    (this->_contextBuf->__jmpbuf)[JB_PC] = translate_address(_pc);
+    (this->_contextBuf->__jmpbuf)[JB_SP] = translate_address(sp);
+    (this->_contextBuf->__jmpbuf)[JB_PC] = translate_address(pc);
     sigemptyset(&_contextBuf->__saved_mask);
 }
 
