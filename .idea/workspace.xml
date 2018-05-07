@@ -13,6 +13,7 @@
   <component name="ChangeListManager">
     <list default="true" id="4e3a32ee-88f0-4336-b776-a0de68b20bf3" name="Default" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/uthreads.cpp" afterPath="$PROJECT_DIR$/uthreads.cpp" />
     </list>
     <ignored path="$PROJECT_DIR$/cmake-build-debug/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -27,8 +28,8 @@
       <file leaf-file-name="uthreads.cpp" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/uthreads.cpp">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="2631">
-              <caret line="171" column="0" lean-forward="false" selection-start-line="171" selection-start-column="0" selection-end-line="171" selection-end-column="0" />
+            <state relative-caret-position="185">
+              <caret line="406" column="16" lean-forward="false" selection-start-line="406" selection-start-column="12" selection-end-line="406" selection-end-column="16" />
               <folding>
                 <element signature="e#109#128#0" expanded="true" />
               </folding>
@@ -39,7 +40,7 @@
       <file leaf-file-name="Thread.h" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/Thread.h">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1564">
+            <state relative-caret-position="379">
               <caret line="92" column="20" lean-forward="false" selection-start-line="92" selection-start-column="20" selection-end-line="92" selection-end-column="20" />
               <folding>
                 <element signature="e#252#271#0" expanded="true" />
@@ -51,7 +52,7 @@
       <file leaf-file-name="Thread.cpp" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/Thread.cpp">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="952">
+            <state relative-caret-position="217">
               <caret line="56" column="0" lean-forward="false" selection-start-line="56" selection-start-column="0" selection-end-line="56" selection-end-column="0" />
               <folding>
                 <element signature="e#594#1009#0" expanded="true" />
@@ -171,7 +172,7 @@
       <workItem from="1525513962431" duration="6000" />
       <workItem from="1525617547820" duration="4640000" />
       <workItem from="1525673833261" duration="1404000" />
-      <workItem from="1525678828573" duration="1064000" />
+      <workItem from="1525678828573" duration="4992000" />
     </task>
     <task id="LOCAL-00001" summary="Merge branch 'master' of https://github.com/NaamaKessler/os_ex2&#10;&#10;# Conflicts:&#10;#&#9;.idea/workspace.xml">
       <created>1525172582581</created>
@@ -194,14 +195,22 @@
       <option name="project" value="LOCAL" />
       <updated>1525679886203</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="Merge branch 'master' of https://github.com/NaamaKessler/os_ex2&#10;&#10;# Conflicts:&#10;#&#9;.idea/workspace.xml">
+      <created>1525679907341</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1525679907341</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="29677000" />
+    <option name="totallyTimeSpent" value="33605000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="-8" y="-8" width="1382" height="744" extended-state="6" />
+    <editor active="true" />
     <layout>
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.22239032" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
@@ -508,26 +517,9 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/demo_jmp.c">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="288">
-          <caret line="117" column="2" lean-forward="true" selection-start-line="117" selection-start-column="2" selection-end-line="117" selection-end-column="38" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/Thread.cpp">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="952">
-          <caret line="56" column="0" lean-forward="false" selection-start-line="56" selection-start-column="0" selection-end-line="56" selection-end-column="0" />
-          <folding>
-            <element signature="e#594#1009#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/Thread.h">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1564">
+        <state relative-caret-position="379">
           <caret line="92" column="20" lean-forward="false" selection-start-line="92" selection-start-column="20" selection-end-line="92" selection-end-column="20" />
           <folding>
             <element signature="e#252#271#0" expanded="true" />
@@ -535,10 +527,28 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/Thread.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="217">
+          <caret line="56" column="0" lean-forward="false" selection-start-line="56" selection-start-column="0" selection-end-line="56" selection-end-column="0" />
+          <folding>
+            <element signature="e#594#1009#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/demo_jmp.c">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1271">
+          <caret line="123" column="22" lean-forward="false" selection-start-line="123" selection-start-column="21" selection-end-line="123" selection-end-column="22" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/uthreads.cpp">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="2631">
-          <caret line="171" column="0" lean-forward="false" selection-start-line="171" selection-start-column="0" selection-end-line="171" selection-end-column="0" />
+        <state relative-caret-position="185">
+          <caret line="406" column="16" lean-forward="false" selection-start-line="406" selection-start-column="12" selection-end-line="406" selection-end-column="16" />
           <folding>
             <element signature="e#109#128#0" expanded="true" />
           </folding>
