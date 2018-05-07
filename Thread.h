@@ -32,7 +32,7 @@ public:
      * @brief Constructor with thread ID.
      * @param tid - thread ID.
      */
-    Thread(int tid, void (*f)(void));
+    Thread(int tid, void (*f)(void), int stackSize);
 
     /**
      * @return Thread ID

@@ -55,12 +55,12 @@ address_t translate_address(address_t addr)
  * @brief Constructor with thread ID.
  * @param tid - thread ID.
  */
-Thread::Thread(int tid, void (*f)(void))
+Thread::Thread(int tid, void (*f)(void), int stackSize)
 {
     this->_tid = tid;
     this->_dependencyQueue =*(new std::queue<Thread*>);
     this->_status = READY;
-    this->_sp = (address_t)this->_stack + STACK_SIZE - sizeof(address_t);
+    this->_sp = (address_t)this->_stack + stackSize - sizeof(address_t);
     this->_pc = (address_t)f;
     this->_numQuantums = 0;
     (this->_contextBuf->__jmpbuf)[JB_SP] = translate_address(_sp);
