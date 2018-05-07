@@ -21,7 +21,7 @@
 // ------------------------------- globals ------------------------------
 
 static std::vector<Thread*> buf(MAX_THREAD_NUM); // changed it - not dynamic allocation
-static std::vector<Thread*> readyBuf;
+static std::deque<Thread*> readyBuf;
 static int numThreads, currentThreadId, totalQuantumNum;
 sigjmp_buf env[MAX_THREAD_NUM]; // ?
 sigset_t oldSet, newSet;
@@ -41,6 +41,7 @@ void contextSwitch(int tid);
 int initBuffer();
 int setTimer(int quantum_usecs);
 void removeFromBuf(std::vector<Thread*> buffer, int tid);
+void removeFromBuf(std::deque<Thread*> buffer, int tid);
 void informDependents(int tid);
 
 // ---------------------------- methods --------------------------------
@@ -76,6 +77,9 @@ void timeHandler(int sig){
 void scheduler(int sig){
     // determine who's running next
     //update currentThreadID
+    if (!readyBuf.empty()){
+        readyBuf.
+    }
 }
 
 void contextSwitch(int tid){
@@ -224,6 +228,15 @@ void removeFromBuf(std::vector<Thread*> buffer, int tid)
     }
 }
 
+void removeFromBuf(std::deque<Thread*> buffer, int tid)
+{
+    for (int idx = 0; idx < buffer.size(); idx++) {
+        if (buffer[idx]->getId() == tid) {
+            buffer.erase(buffer.begin() + idx);
+        }
+    }
+}
+
 /**
  * Upon termination of a thread, informs all the threads that are synced to it.
  * @param tid
@@ -283,7 +296,8 @@ int uthread_terminate(int tid)  //todo: block signals
         for (Thread* thread: buf) {
             delete(thread);
         }
-        vector<Thread*> dummy_1, dummy_2;
+        vector<Thread*> dummy_1;
+        deque<Thread*> dummy_2;
         buf.swap(dummy_1);
         readyBuf.swap(dummy_2);
         exit(0);
