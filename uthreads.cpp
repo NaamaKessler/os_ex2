@@ -255,6 +255,7 @@ int uthread_init(int quantum_usecs)
 //        return -1;
 //    }
     buf[0] = new Thread(0, nullptr, STACK_SIZE);
+    leakage_count++;
     buf[0]->setStatus(RUNNING);
 //    readyBuf.push_back(buf[0]); //todo: Is that needed?
     numThreads = 1;
