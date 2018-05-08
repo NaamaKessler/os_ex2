@@ -206,7 +206,7 @@
       <workItem from="1525673833261" duration="1404000" />
       <workItem from="1525678828573" duration="10128000" />
       <workItem from="1525705829231" duration="1838000" />
-      <workItem from="1525792827112" duration="611000" />
+      <workItem from="1525792827112" duration="650000" />
     </task>
     <task id="LOCAL-00001" summary="Merge branch 'master' of https://github.com/NaamaKessler/os_ex2&#10;&#10;# Conflicts:&#10;#&#9;.idea/workspace.xml">
       <created>1525172582581</created>
@@ -355,11 +355,18 @@
       <option name="project" value="LOCAL" />
       <updated>1525793384631</updated>
     </task>
-    <option name="localTasksCounter" value="22" />
+    <task id="LOCAL-00022" summary="Merge branch 'master' of https://github.com/NaamaKessler/os_ex2&#10;&#10;# Conflicts:&#10;#&#9;.idea/workspace.xml">
+      <created>1525793444337</created>
+      <option name="number" value="00022" />
+      <option name="presentableId" value="LOCAL-00022" />
+      <option name="project" value="LOCAL" />
+      <updated>1525793444337</updated>
+    </task>
+    <option name="localTasksCounter" value="23" />
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="41190000" />
+    <option name="totallyTimeSpent" value="41229000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="-4" y="24" width="1928" height="1035" extended-state="6" />
