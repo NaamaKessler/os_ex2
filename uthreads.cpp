@@ -16,6 +16,7 @@
 
 #define ERR_FUNC_FAIL "thread library error: "
 #define ERR_SYS_CALL "system error: "
+#define AFTER_JUMP 2
 // NDEBUG //todo
 
 // ------------------------------- globals ------------------------------
@@ -41,7 +42,6 @@ int _idValidator(int tid);
 void timeHandler(int sig);
 void scheduler(int sig);
 void contextSwitch(int tid);
-int initBuffer();
 int setTimer(int quantum_usecs);
 void removeFromBuf(std::deque<Thread*> * buffer, int tid);
 void informDependents(int tid);
@@ -83,22 +83,27 @@ void timeHandler(int sig){
     //printBuf();
     //cout << "0 readyBuf size is: " << readyBuf.size() << "\n";
     totalQuantumNum++;
-    // call scheduler:
+
     if (mask()){
         // error
         return;
     }
+
+    // call scheduler:
     if (isReady){
-        scheduler(READY); // scheduling decisions bc of timer - cur thread should switch to ready
+        // scheduling decisions bc of timer - cur thread should switch to ready
+        scheduler(READY);
     } else {
         scheduler(BLOCKED);
     }
     isReady = true;
-    buf[currentThreadId]->increaseNumQuantums();
+
     // reset timer:
+    buf[currentThreadId]->increaseNumQuantums();
     if (setitimer (ITIMER_VIRTUAL, &timer, nullptr)) {
         std::cerr << ERR_SYS_CALL << "Resetting the virtual timer has failed.\n";
     }
+
     if (releaseMask()){
         //error
         return;
@@ -107,39 +112,33 @@ void timeHandler(int sig){
 
 
 /**
- *
+ * Determine who's running next: moves current thread to READY,
+ * pops from ready into RUNNING. Calls context switch.
  * @param state - state to move the current thread to
  */
 void scheduler(int state){
     cout << "scheduler\n";
     //cout << "1 readyBuf size is: " << readyBuf.size() << "\n";
-    // determine who's running next: moves current thread to READY,
-    // pops from ready into RUNNING. Calls context switch.
 
     Thread *runningThread;
     int oldID;
+
     assert (state == READY || state == RUNNING || state == BLOCKED);
 
-
-    // get id of new running thread
-
-
-    // pop READY thread from readyBuf
     if (readyBuf.size() == 0)
     {
-        // main thread is ready
+        // main thread is running - do nothing
         return;
     } else {
-        // move old running thread to state
-
-//        if (isReady){
+        // move old running thread to readybuf, READY state
         if (buf.at(uthread_get_tid())->getStatus() == RUNNING){
             readyBuf.push_back(buf[uthread_get_tid()]);
         }
-
         buf[uthread_get_tid()]->setStatus(state);
         oldID = uthread_get_tid();
+
         printBuf();
+
         // pop new running thread from ready to running
         runningThread = readyBuf.front();
         readyBuf.pop_front(); // pop just deletes the element
@@ -148,9 +147,6 @@ void scheduler(int state){
         cout << "current thread: " << currentThreadId << "\n";
         //contextSwitch(runningThread->getId());
         contextSwitch(oldID);
-
-
-
     }
     cout << "finished scheduler \n";
 }
@@ -160,32 +156,14 @@ void contextSwitch(int tid){
     // save environment
     // **** we sent tid which is the same as uthread_get_tid() so saving and
     // loading did nothing
-//    int ret_val = sigsetjmp(*(buf[uthread_get_tid()]->getEnvironment()),1);
+
     int ret_val = sigsetjmp(*(buf[tid]->getEnvironment()),1);
-    if (ret_val == 2) {
+    if (ret_val == AFTER_JUMP) {
         return;
     }
 
     // load environment
-    siglongjmp(*(buf[uthread_get_tid()]->getEnvironment()),2);
-}
-
-
-/**
- * Initializes a buffer to contain all existing threads.
- */
-int initBuffer() {
-//    try {
-//        buf = new std::vector(MAX_THREAD_NUM);
-//    }
-//    catch (std::bad_alloc& e){
-//        std::cerr << ERR_SYS_CALL << "Memory allocation failed.\n";
-//        return -1;
-//    }
-//    std::vector<Thread*> buf(MAX_THREAD_NUM);
-
-    return 0;
-
+    siglongjmp(*(buf[uthread_get_tid()]->getEnvironment()),AFTER_JUMP);
 }
 
 /**
@@ -195,7 +173,6 @@ int setTimer(int quantum_usecs) {
     // todo: handle input if > 1000000: should be 1 in tv_sec (tip from whatsapp)
     cout << "setTimer\n";
     //set timer handler:
-//    sa.sa_handler = &scheduler;
     sa.sa_handler = &timeHandler;
     if (sigaction(SIGVTALRM, &sa, nullptr) < 0) {
         std::cerr << ERR_SYS_CALL << "sigaction has failed.\n";     //todo: change.
@@ -363,6 +340,8 @@ int uthread_spawn(void (*f)(void))
             return -1;
         }
     }
+
+    // error handling
     if (tid == -1){
         std::cerr << ERR_FUNC_FAIL << "Number of threads exceeds limit.\n";
     }
@@ -457,9 +436,14 @@ int uthread_block(int tid)
 {
     cout << "uthread_block\n";
     // check id validity and mask:
-    if (tid == 0 || _idValidator(tid)==-1 || mask()) {
+    if (tid == 0 || _idValidator(tid)==-1){
+        std::cerr << ERR_FUNC_FAIL << "Invalid tid to block.\n";
         return -1;
     }
+    if (mask()) {
+        return -1;
+    }
+
     // remove from ready:
     if (buf[tid]->getStatus() == READY) {
         removeFromBuf(&readyBuf, tid);
@@ -491,7 +475,11 @@ int uthread_block(int tid)
 int uthread_resume(int tid)
 {
     cout << "uthread_resume\n";
-    if (_idValidator(tid) || mask()) {
+    if (_idValidator(tid)==-1){
+        std::cerr << ERR_FUNC_FAIL << "Invalid tid to resume.\n";
+        return -1;
+    }
+    if (mask()) {
         return -1;
     }
     // make sure thread is not active to begin with:
