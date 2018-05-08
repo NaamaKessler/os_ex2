@@ -58,7 +58,8 @@ address_t translate_address(address_t addr)
 Thread::Thread(int tid, void (*f)(void), int stackSize)
 {
     address_t sp, pc;
-    this->blockedNoSync = false;
+    this->_blockedNoSync = false;
+    this->_isSynced = false;
     this->_tid = tid;
     this->_dependencyQueue =*(new std::queue<Thread*>);
     this->_status = READY;
@@ -82,12 +83,12 @@ Thread::~Thread()
 
 void Thread::setBlockedNoSync(bool flag)
 {
-    this->blockedNoSync = flag;
+    this->_blockedNoSync = flag;
 }
 
 bool Thread::getBlockedNoSync()
 {
-    return this->blockedNoSync;
+    return this->_blockedNoSync;
 }
 
 /**
@@ -185,4 +186,14 @@ int Thread::getNumQuantums()
 void Thread::increaseNumQuantums()
 {
     _numQuantums++;
+}
+
+void Thread::setSynced(bool flag)
+{
+    this->_isSynced = flag;
+}
+
+bool Thread::isSynced()
+{
+    return this->_isSynced;
 }

@@ -8,7 +8,6 @@
 
 #ifndef EX2_THREAD_H
 #define EX2_THREAD_H
-#define STACK_SIZE 4096 // maybe should be changed - it's defined in uthreads
 
 #include <iostream>
 #include <queue>
@@ -19,6 +18,8 @@
 #define READY 1
 #define RUNNING 2
 #define BLOCKED 3
+
+//#define STACK_SIZE 4096
 
 // ------------------------------- methods ------------------------------
 using namespace std;
@@ -94,15 +95,17 @@ public:
 
     bool getBlockedNoSync();
 
+    void setSynced(bool flag);
+
+    bool isSynced();
+
 private:
     int _tid;
-    int _status;
+    bool _isSynced, _blockedNoSync;
+    int _status, _numQuantums;
     char* _stack;
     queue<Thread*> _dependencyQueue;
-    //address_t _sp, _pc;
     sigjmp_buf _contextBuf;
-    int _numQuantums;
-    bool blockedNoSync;
 
 };
 

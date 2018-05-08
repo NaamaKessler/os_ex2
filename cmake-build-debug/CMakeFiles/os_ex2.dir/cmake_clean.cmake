@@ -1,7 +1,7 @@
 file(REMOVE_RECURSE
-  "CMakeFiles/os_ex2.dir/main.cpp.o"
   "CMakeFiles/os_ex2.dir/uthreads.cpp.o"
   "CMakeFiles/os_ex2.dir/Thread.cpp.o"
+  "CMakeFiles/os_ex2.dir/test14.cpp.o"
   "os_ex2.pdb"
   "os_ex2"
 )

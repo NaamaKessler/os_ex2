@@ -48,10 +48,10 @@ RM = /usr/local/jetbrains/clion-2017.2.2/bin/cmake/bin/cmake -E remove -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /cs/usr/sapirely/safe/OS/os_ex2
+CMAKE_SOURCE_DIR = /cs/usr/naamakessler/Documents/OS/os_ex2
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /cs/usr/sapirely/safe/OS/os_ex2/cmake-build-debug
+CMAKE_BINARY_DIR = /cs/usr/naamakessler/Documents/OS/os_ex2/cmake-build-debug
 
 #=============================================================================
 # Targets provided globally by CMake.
@@ -80,9 +80,9 @@ edit_cache/fast: edit_cache
 
 # The main all target
 all: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /cs/usr/sapirely/safe/OS/os_ex2/cmake-build-debug/CMakeFiles /cs/usr/sapirely/safe/OS/os_ex2/cmake-build-debug/CMakeFiles/progress.marks
+	$(CMAKE_COMMAND) -E cmake_progress_start /cs/usr/naamakessler/Documents/OS/os_ex2/cmake-build-debug/CMakeFiles /cs/usr/naamakessler/Documents/OS/os_ex2/cmake-build-debug/CMakeFiles/progress.marks
 	$(MAKE) -f CMakeFiles/Makefile2 all
-	$(CMAKE_COMMAND) -E cmake_progress_start /cs/usr/sapirely/safe/OS/os_ex2/cmake-build-debug/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /cs/usr/naamakessler/Documents/OS/os_ex2/cmake-build-debug/CMakeFiles 0
 .PHONY : all
 
 # The main clean target
@@ -150,32 +150,32 @@ Thread.cpp.s:
 	$(MAKE) -f CMakeFiles/os_ex2.dir/build.make CMakeFiles/os_ex2.dir/Thread.cpp.s
 .PHONY : Thread.cpp.s
 
-main.o: main.cpp.o
+test14.o: test14.cpp.o
 
-.PHONY : main.o
+.PHONY : test14.o
 
 # target to build an object file
-main.cpp.o:
-	$(MAKE) -f CMakeFiles/os_ex2.dir/build.make CMakeFiles/os_ex2.dir/main.cpp.o
-.PHONY : main.cpp.o
+test14.cpp.o:
+	$(MAKE) -f CMakeFiles/os_ex2.dir/build.make CMakeFiles/os_ex2.dir/test14.cpp.o
+.PHONY : test14.cpp.o
 
-main.i: main.cpp.i
+test14.i: test14.cpp.i
 
-.PHONY : main.i
+.PHONY : test14.i
 
 # target to preprocess a source file
-main.cpp.i:
-	$(MAKE) -f CMakeFiles/os_ex2.dir/build.make CMakeFiles/os_ex2.dir/main.cpp.i
-.PHONY : main.cpp.i
+test14.cpp.i:
+	$(MAKE) -f CMakeFiles/os_ex2.dir/build.make CMakeFiles/os_ex2.dir/test14.cpp.i
+.PHONY : test14.cpp.i
 
-main.s: main.cpp.s
+test14.s: test14.cpp.s
 
-.PHONY : main.s
+.PHONY : test14.s
 
 # target to generate assembly for a file
-main.cpp.s:
-	$(MAKE) -f CMakeFiles/os_ex2.dir/build.make CMakeFiles/os_ex2.dir/main.cpp.s
-.PHONY : main.cpp.s
+test14.cpp.s:
+	$(MAKE) -f CMakeFiles/os_ex2.dir/build.make CMakeFiles/os_ex2.dir/test14.cpp.s
+.PHONY : test14.cpp.s
 
 uthreads.o: uthreads.cpp.o
 
@@ -216,9 +216,9 @@ help:
 	@echo "... Thread.o"
 	@echo "... Thread.i"
 	@echo "... Thread.s"
-	@echo "... main.o"
-	@echo "... main.i"
-	@echo "... main.s"
+	@echo "... test14.o"
+	@echo "... test14.i"
+	@echo "... test14.s"
 	@echo "... uthreads.o"
 	@echo "... uthreads.i"
 	@echo "... uthreads.s"

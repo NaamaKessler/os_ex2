@@ -1,4 +1,4 @@
-# Install script for directory: /cs/usr/sapirely/safe/OS/os_ex2
+# Install script for directory: /cs/usr/naamakessler/Documents/OS/os_ex2
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -40,5 +40,5 @@ endif()
 
 string(REPLACE ";" "\n" CMAKE_INSTALL_MANIFEST_CONTENT
        "${CMAKE_INSTALL_MANIFEST_FILES}")
-file(WRITE "/cs/usr/sapirely/safe/OS/os_ex2/cmake-build-debug/${CMAKE_INSTALL_MANIFEST}"
+file(WRITE "/cs/usr/naamakessler/Documents/OS/os_ex2/cmake-build-debug/${CMAKE_INSTALL_MANIFEST}"
      "${CMAKE_INSTALL_MANIFEST_CONTENT}")

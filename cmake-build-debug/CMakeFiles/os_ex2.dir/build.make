@@ -43,10 +43,10 @@ RM = /usr/local/jetbrains/clion-2017.2.2/bin/cmake/bin/cmake -E remove -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /cs/usr/sapirely/safe/OS/os_ex2
+CMAKE_SOURCE_DIR = /cs/usr/naamakessler/Documents/OS/os_ex2
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /cs/usr/sapirely/safe/OS/os_ex2/cmake-build-debug
+CMAKE_BINARY_DIR = /cs/usr/naamakessler/Documents/OS/os_ex2/cmake-build-debug
 
 # Include any dependencies generated for this target.
 include CMakeFiles/os_ex2.dir/depend.make
@@ -57,42 +57,18 @@ include CMakeFiles/os_ex2.dir/progress.make
 # Include the compile flags for this target's objects.
 include CMakeFiles/os_ex2.dir/flags.make
 
-CMakeFiles/os_ex2.dir/main.cpp.o: CMakeFiles/os_ex2.dir/flags.make
-CMakeFiles/os_ex2.dir/main.cpp.o: ../main.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/cs/usr/sapirely/safe/OS/os_ex2/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/os_ex2.dir/main.cpp.o"
-	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/os_ex2.dir/main.cpp.o -c /cs/usr/sapirely/safe/OS/os_ex2/main.cpp
-
-CMakeFiles/os_ex2.dir/main.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/os_ex2.dir/main.cpp.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /cs/usr/sapirely/safe/OS/os_ex2/main.cpp > CMakeFiles/os_ex2.dir/main.cpp.i
-
-CMakeFiles/os_ex2.dir/main.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/os_ex2.dir/main.cpp.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /cs/usr/sapirely/safe/OS/os_ex2/main.cpp -o CMakeFiles/os_ex2.dir/main.cpp.s
-
-CMakeFiles/os_ex2.dir/main.cpp.o.requires:
-
-.PHONY : CMakeFiles/os_ex2.dir/main.cpp.o.requires
-
-CMakeFiles/os_ex2.dir/main.cpp.o.provides: CMakeFiles/os_ex2.dir/main.cpp.o.requires
-	$(MAKE) -f CMakeFiles/os_ex2.dir/build.make CMakeFiles/os_ex2.dir/main.cpp.o.provides.build
-.PHONY : CMakeFiles/os_ex2.dir/main.cpp.o.provides
-
-CMakeFiles/os_ex2.dir/main.cpp.o.provides.build: CMakeFiles/os_ex2.dir/main.cpp.o
-
-
 CMakeFiles/os_ex2.dir/uthreads.cpp.o: CMakeFiles/os_ex2.dir/flags.make
 CMakeFiles/os_ex2.dir/uthreads.cpp.o: ../uthreads.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/cs/usr/sapirely/safe/OS/os_ex2/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object CMakeFiles/os_ex2.dir/uthreads.cpp.o"
-	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/os_ex2.dir/uthreads.cpp.o -c /cs/usr/sapirely/safe/OS/os_ex2/uthreads.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/cs/usr/naamakessler/Documents/OS/os_ex2/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/os_ex2.dir/uthreads.cpp.o"
+	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/os_ex2.dir/uthreads.cpp.o -c /cs/usr/naamakessler/Documents/OS/os_ex2/uthreads.cpp
 
 CMakeFiles/os_ex2.dir/uthreads.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/os_ex2.dir/uthreads.cpp.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /cs/usr/sapirely/safe/OS/os_ex2/uthreads.cpp > CMakeFiles/os_ex2.dir/uthreads.cpp.i
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /cs/usr/naamakessler/Documents/OS/os_ex2/uthreads.cpp > CMakeFiles/os_ex2.dir/uthreads.cpp.i
 
 CMakeFiles/os_ex2.dir/uthreads.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/os_ex2.dir/uthreads.cpp.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /cs/usr/sapirely/safe/OS/os_ex2/uthreads.cpp -o CMakeFiles/os_ex2.dir/uthreads.cpp.s
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /cs/usr/naamakessler/Documents/OS/os_ex2/uthreads.cpp -o CMakeFiles/os_ex2.dir/uthreads.cpp.s
 
 CMakeFiles/os_ex2.dir/uthreads.cpp.o.requires:
 
@@ -107,16 +83,16 @@ CMakeFiles/os_ex2.dir/uthreads.cpp.o.provides.build: CMakeFiles/os_ex2.dir/uthre
 
 CMakeFiles/os_ex2.dir/Thread.cpp.o: CMakeFiles/os_ex2.dir/flags.make
 CMakeFiles/os_ex2.dir/Thread.cpp.o: ../Thread.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/cs/usr/sapirely/safe/OS/os_ex2/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object CMakeFiles/os_ex2.dir/Thread.cpp.o"
-	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/os_ex2.dir/Thread.cpp.o -c /cs/usr/sapirely/safe/OS/os_ex2/Thread.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/cs/usr/naamakessler/Documents/OS/os_ex2/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object CMakeFiles/os_ex2.dir/Thread.cpp.o"
+	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/os_ex2.dir/Thread.cpp.o -c /cs/usr/naamakessler/Documents/OS/os_ex2/Thread.cpp
 
 CMakeFiles/os_ex2.dir/Thread.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/os_ex2.dir/Thread.cpp.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /cs/usr/sapirely/safe/OS/os_ex2/Thread.cpp > CMakeFiles/os_ex2.dir/Thread.cpp.i
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /cs/usr/naamakessler/Documents/OS/os_ex2/Thread.cpp > CMakeFiles/os_ex2.dir/Thread.cpp.i
 
 CMakeFiles/os_ex2.dir/Thread.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/os_ex2.dir/Thread.cpp.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /cs/usr/sapirely/safe/OS/os_ex2/Thread.cpp -o CMakeFiles/os_ex2.dir/Thread.cpp.s
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /cs/usr/naamakessler/Documents/OS/os_ex2/Thread.cpp -o CMakeFiles/os_ex2.dir/Thread.cpp.s
 
 CMakeFiles/os_ex2.dir/Thread.cpp.o.requires:
 
@@ -129,21 +105,45 @@ CMakeFiles/os_ex2.dir/Thread.cpp.o.provides: CMakeFiles/os_ex2.dir/Thread.cpp.o.
 CMakeFiles/os_ex2.dir/Thread.cpp.o.provides.build: CMakeFiles/os_ex2.dir/Thread.cpp.o
 
 
+CMakeFiles/os_ex2.dir/test14.cpp.o: CMakeFiles/os_ex2.dir/flags.make
+CMakeFiles/os_ex2.dir/test14.cpp.o: ../test14.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/cs/usr/naamakessler/Documents/OS/os_ex2/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object CMakeFiles/os_ex2.dir/test14.cpp.o"
+	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/os_ex2.dir/test14.cpp.o -c /cs/usr/naamakessler/Documents/OS/os_ex2/test14.cpp
+
+CMakeFiles/os_ex2.dir/test14.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/os_ex2.dir/test14.cpp.i"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /cs/usr/naamakessler/Documents/OS/os_ex2/test14.cpp > CMakeFiles/os_ex2.dir/test14.cpp.i
+
+CMakeFiles/os_ex2.dir/test14.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/os_ex2.dir/test14.cpp.s"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /cs/usr/naamakessler/Documents/OS/os_ex2/test14.cpp -o CMakeFiles/os_ex2.dir/test14.cpp.s
+
+CMakeFiles/os_ex2.dir/test14.cpp.o.requires:
+
+.PHONY : CMakeFiles/os_ex2.dir/test14.cpp.o.requires
+
+CMakeFiles/os_ex2.dir/test14.cpp.o.provides: CMakeFiles/os_ex2.dir/test14.cpp.o.requires
+	$(MAKE) -f CMakeFiles/os_ex2.dir/build.make CMakeFiles/os_ex2.dir/test14.cpp.o.provides.build
+.PHONY : CMakeFiles/os_ex2.dir/test14.cpp.o.provides
+
+CMakeFiles/os_ex2.dir/test14.cpp.o.provides.build: CMakeFiles/os_ex2.dir/test14.cpp.o
+
+
 # Object files for target os_ex2
 os_ex2_OBJECTS = \
-"CMakeFiles/os_ex2.dir/main.cpp.o" \
 "CMakeFiles/os_ex2.dir/uthreads.cpp.o" \
-"CMakeFiles/os_ex2.dir/Thread.cpp.o"
+"CMakeFiles/os_ex2.dir/Thread.cpp.o" \
+"CMakeFiles/os_ex2.dir/test14.cpp.o"
 
 # External object files for target os_ex2
 os_ex2_EXTERNAL_OBJECTS =
 
-os_ex2: CMakeFiles/os_ex2.dir/main.cpp.o
 os_ex2: CMakeFiles/os_ex2.dir/uthreads.cpp.o
 os_ex2: CMakeFiles/os_ex2.dir/Thread.cpp.o
+os_ex2: CMakeFiles/os_ex2.dir/test14.cpp.o
 os_ex2: CMakeFiles/os_ex2.dir/build.make
 os_ex2: CMakeFiles/os_ex2.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/cs/usr/sapirely/safe/OS/os_ex2/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Linking CXX executable os_ex2"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/cs/usr/naamakessler/Documents/OS/os_ex2/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Linking CXX executable os_ex2"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/os_ex2.dir/link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.
@@ -151,9 +151,9 @@ CMakeFiles/os_ex2.dir/build: os_ex2
 
 .PHONY : CMakeFiles/os_ex2.dir/build
 
-CMakeFiles/os_ex2.dir/requires: CMakeFiles/os_ex2.dir/main.cpp.o.requires
 CMakeFiles/os_ex2.dir/requires: CMakeFiles/os_ex2.dir/uthreads.cpp.o.requires
 CMakeFiles/os_ex2.dir/requires: CMakeFiles/os_ex2.dir/Thread.cpp.o.requires
+CMakeFiles/os_ex2.dir/requires: CMakeFiles/os_ex2.dir/test14.cpp.o.requires
 
 .PHONY : CMakeFiles/os_ex2.dir/requires
 
@@ -162,6 +162,6 @@ CMakeFiles/os_ex2.dir/clean:
 .PHONY : CMakeFiles/os_ex2.dir/clean
 
 CMakeFiles/os_ex2.dir/depend:
-	cd /cs/usr/sapirely/safe/OS/os_ex2/cmake-build-debug && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /cs/usr/sapirely/safe/OS/os_ex2 /cs/usr/sapirely/safe/OS/os_ex2 /cs/usr/sapirely/safe/OS/os_ex2/cmake-build-debug /cs/usr/sapirely/safe/OS/os_ex2/cmake-build-debug /cs/usr/sapirely/safe/OS/os_ex2/cmake-build-debug/CMakeFiles/os_ex2.dir/DependInfo.cmake --color=$(COLOR)
+	cd /cs/usr/naamakessler/Documents/OS/os_ex2/cmake-build-debug && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /cs/usr/naamakessler/Documents/OS/os_ex2 /cs/usr/naamakessler/Documents/OS/os_ex2 /cs/usr/naamakessler/Documents/OS/os_ex2/cmake-build-debug /cs/usr/naamakessler/Documents/OS/os_ex2/cmake-build-debug /cs/usr/naamakessler/Documents/OS/os_ex2/cmake-build-debug/CMakeFiles/os_ex2.dir/DependInfo.cmake --color=$(COLOR)
 .PHONY : CMakeFiles/os_ex2.dir/depend
 

@@ -4,9 +4,9 @@ set(CMAKE_DEPENDS_LANGUAGES
   )
 # The set of files for implicit dependencies of each language:
 set(CMAKE_DEPENDS_CHECK_CXX
-  "/cs/usr/sapirely/safe/OS/os_ex2/Thread.cpp" "/cs/usr/sapirely/safe/OS/os_ex2/cmake-build-debug/CMakeFiles/os_ex2.dir/Thread.cpp.o"
-  "/cs/usr/sapirely/safe/OS/os_ex2/main.cpp" "/cs/usr/sapirely/safe/OS/os_ex2/cmake-build-debug/CMakeFiles/os_ex2.dir/main.cpp.o"
-  "/cs/usr/sapirely/safe/OS/os_ex2/uthreads.cpp" "/cs/usr/sapirely/safe/OS/os_ex2/cmake-build-debug/CMakeFiles/os_ex2.dir/uthreads.cpp.o"
+  "/cs/usr/naamakessler/Documents/OS/os_ex2/Thread.cpp" "/cs/usr/naamakessler/Documents/OS/os_ex2/cmake-build-debug/CMakeFiles/os_ex2.dir/Thread.cpp.o"
+  "/cs/usr/naamakessler/Documents/OS/os_ex2/test14.cpp" "/cs/usr/naamakessler/Documents/OS/os_ex2/cmake-build-debug/CMakeFiles/os_ex2.dir/test14.cpp.o"
+  "/cs/usr/naamakessler/Documents/OS/os_ex2/uthreads.cpp" "/cs/usr/naamakessler/Documents/OS/os_ex2/cmake-build-debug/CMakeFiles/os_ex2.dir/uthreads.cpp.o"
   )
 set(CMAKE_CXX_COMPILER_ID "GNU")
 

@@ -1,3 +1,3 @@
-/cs/usr/sapirely/safe/OS/os_ex2/cmake-build-debug/CMakeFiles/rebuild_cache.dir
-/cs/usr/sapirely/safe/OS/os_ex2/cmake-build-debug/CMakeFiles/edit_cache.dir
-/cs/usr/sapirely/safe/OS/os_ex2/cmake-build-debug/CMakeFiles/os_ex2.dir
+/cs/usr/naamakessler/Documents/OS/os_ex2/cmake-build-debug/CMakeFiles/rebuild_cache.dir
+/cs/usr/naamakessler/Documents/OS/os_ex2/cmake-build-debug/CMakeFiles/edit_cache.dir
+/cs/usr/naamakessler/Documents/OS/os_ex2/cmake-build-debug/CMakeFiles/os_ex2.dir
