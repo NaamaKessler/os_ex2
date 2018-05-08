@@ -91,7 +91,7 @@ void timeHandler(int sig){
     if (isReady){
         scheduler(READY); // scheduling decisions bc of timer - cur thread should switch to ready
     } else {
-        scheduler(BLOCKED); // scheduling decisions bc of timer - cur thread should switch to blocked
+        scheduler(BLOCKED);
     }
     isReady = true;
     buf[currentThreadId]->increaseNumQuantums();
@@ -117,7 +117,7 @@ void scheduler(int state){
     // pops from ready into RUNNING. Calls context switch.
 
     Thread *runningThread;
-
+    int oldID;
     assert (state == READY || state == RUNNING || state == BLOCKED);
 
 
@@ -138,6 +138,7 @@ void scheduler(int state){
         }
 
         buf[uthread_get_tid()]->setStatus(state);
+        oldID = uthread_get_tid();
         printBuf();
         // pop new running thread from ready to running
         runningThread = readyBuf.front();
@@ -145,7 +146,8 @@ void scheduler(int state){
         runningThread->setStatus(RUNNING);
         currentThreadId = runningThread->getId();
         cout << "current thread: " << currentThreadId << "\n";
-        contextSwitch(runningThread->getId());
+        //contextSwitch(runningThread->getId());
+        contextSwitch(oldID);
 
 
 
@@ -156,13 +158,16 @@ void scheduler(int state){
 void contextSwitch(int tid){
     cout << "contextSwitch\n";
     // save environment
-    int ret_val = sigsetjmp(*(buf[uthread_get_tid()]->getEnvironment()),1);
+    // **** we sent tid which is the same as uthread_get_tid() so saving and
+    // loading did nothing
+//    int ret_val = sigsetjmp(*(buf[uthread_get_tid()]->getEnvironment()),1);
+    int ret_val = sigsetjmp(*(buf[tid]->getEnvironment()),1);
     if (ret_val == 2) {
         return;
     }
 
     // load environment
-    siglongjmp(*(buf[tid]->getEnvironment()),2);
+    siglongjmp(*(buf[uthread_get_tid()]->getEnvironment()),2);
 }
 
 
@@ -514,13 +519,13 @@ int uthread_sync(int tid)
     cout << "uthread_sync\n";
     // the running thread is calling this func - currentThreadId
 
-    // block current thread
-    if (_idValidator(tid) || mask())
+    if (_idValidator(tid) || tid == 0 || uthread_get_tid() == tid || mask())
     {
-        // uthread_block will return an error if tid==0
+        std::cerr << ERR_FUNC_FAIL << "Invalid input.\n";
         return -1;
     }
 
+    // block current thread
     buf.at(uthread_get_tid())->setStatus(BLOCKED);
     isReady = false;
 
