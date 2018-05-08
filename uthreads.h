@@ -1,258 +1,16 @@
-/**
- * @file uthreads.cpp
- *
+#ifndef _UTHREADS_H
+#define _UTHREADS_H
+
+/*
+ * User-Level Threads Library (uthreads)
+ * Author: OS, os@cs.huji.ac.il
  */
 
-// ------------------------------ includes ------------------------------
+#define MAX_THREAD_NUM 100 /* maximal number of threads */
+#define STACK_SIZE 4096 /* stack size per thread (in bytes) */
 
-#include <iostream>
-#include <sys/time.h>
-#include <vector>
-#include <algorithm>
-#include <signal.h>
-#include <cassert>
-#include "uthreads.h"
-#include "Thread.h"
+/* External interface */
 
-#define ERR_FUNC_FAIL "thread library error: "
-#define ERR_SYS_CALL "system error: "
-#define AFTER_JUMP 2
-// NDEBUG //todo
-
-// ------------------------------- globals ------------------------------
-
-static std::vector<Thread*> buf(MAX_THREAD_NUM); // changed it - not dynamic allocation
-static std::deque<Thread*> readyBuf;
-static int numThreads, currentThreadId, totalQuantumNum;
-sigset_t blockSet;
-bool isReady = true; // state of the currently running thread , before timeHandler is called.
-
-//timer globals:
-struct sigaction sa;
-static struct itimerval timer;
-
-//todo: REMOVE
-int leakage_count = 0;
-
-
-// -------------------------- inner funcs ------------------------------
-
-// declarations so we can keep up with our funcs
-int _idValidator(int tid);
-void timeHandler(int sig);
-void scheduler(int sig);
-void contextSwitch(int tid);
-int setTimer(int quantum_usecs);
-void removeFromBuf(std::deque<Thread*> * buffer, int tid);
-void informDependents(int tid);
-int mask();
-int unMask();
-
-//bla
-// ---------------------------- helper methods --------------------------------
-
-//void printBuf(){
-//    cerr << "readyBuf size is: " << readyBuf.size() << "\n";
-//    for (int i=0; i<readyBuf.size(); i++){
-//        cerr << "readyBuf[" << i << "]: " << readyBuf.at(i)->getId() << "\n";
-//    }
-//}
-
-
-/**
- * check validity of tid.
- */
-int _idValidator(int tid) // copied from uthread_init
-{
-//    cerr << "_idValidator\n";
-    // check validity of input
-    if (tid < 0 || tid > MAX_THREAD_NUM || !buf[tid]) {
-        std::cerr << ERR_FUNC_FAIL << "Invalid input.\n";
-        return -1;
-    }
-    return 0;
-}
-
-
-/**
- * times up -> signal -> time handler is called:
- * calls Scheduler (handles buf & states), that calls contextSwitch (handles env)
- * @param sig
- */
-void timeHandler(int sig){
-//    cerr << "timeHandler\n";
-    totalQuantumNum++;
-
-    if (mask()){
-        // error
-        return;
-    }
-
-    // call scheduler:
-    if (isReady){
-        // scheduling decisions bc of timer - cur thread should switch to ready
-        scheduler(READY);
-    } else {
-        scheduler(BLOCKED);
-    }
-    isReady = true;
-
-    // reset timer:
-    buf[currentThreadId]->increaseNumQuantums();
-    if (setitimer (ITIMER_VIRTUAL, &timer, nullptr)) {
-        std::cerr << ERR_SYS_CALL << "Resetting the virtual timer has failed.\n";
-    }
-
-    if (unMask()){
-        //error
-        return;
-    }
-}
-
-
-/**
- * Determine who's running next: moves current thread to READY,
- * pops from ready into RUNNING. Calls context switch.
- * @param state - state to move the current thread to
- */
-void scheduler(int state){
-//    cerr << "scheduler\n";
-    //cerr << "1 readyBuf size is: " << readyBuf.size() << "\n";
-
-    Thread *runningThread;
-    int oldID;
-
-    assert (state == READY || state == RUNNING || state == BLOCKED);
-
-    if (readyBuf.size() == 0)
-    {
-        // main thread is running - do nothing
-        return;
-    } else {
-        // move old running thread to readybuf, READY state
-        if (buf.at(uthread_get_tid())->getStatus() == RUNNING){
-            readyBuf.push_back(buf[uthread_get_tid()]);
-        }
-        buf[uthread_get_tid()]->setStatus(state);
-        oldID = uthread_get_tid();
-
-        // pop new running thread from ready to running
-        runningThread = readyBuf.front();
-        readyBuf.pop_front(); // pop just deletes the element
-        runningThread->setStatus(RUNNING);
-        currentThreadId = runningThread->getId();
-//        cerr << "current thread: " << currentThreadId << "\n";
-        //contextSwitch(runningThread->getId());
-        contextSwitch(oldID);
-    }
-//    cerr << "finished scheduler \n";
-}
-
-void contextSwitch(int tid){
-//    cerr << "contextSwitch\n";
-    // save environment
-    // **** we sent tid which is the same as uthread_get_tid() so saving and
-    // loading did nothing
-
-    int ret_val = sigsetjmp(*(buf[tid]->getEnvironment()),1);
-    if (ret_val == AFTER_JUMP) {
-        return;
-    }
-
-    // load environment
-    siglongjmp(*(buf[uthread_get_tid()]->getEnvironment()),AFTER_JUMP);
-}
-
-/**
- * Sets a virtual timer with the time interval quantum_usecs.
- */
-int setTimer(int quantum_usecs) {
-    // todo: handle input if > 1000000: should be 1 in tv_sec (tip from whatsapp)
-//    cerr << "setTimer\n";
-    //set timer handler:
-    sa.sa_handler = &timeHandler;
-    if (sigaction(SIGVTALRM, &sa, nullptr) < 0) {
-        std::cerr << ERR_SYS_CALL << "sigaction has failed.\n";     //todo: change.
-        return -1;
-    }
-    // Configure the timer to expire after quantum micro secs:
-    timer.it_value.tv_sec = 0;
-    timer.it_value.tv_usec = quantum_usecs;
-
-    // configure the timer to expire every quantum micro secs after that:
-    timer.it_interval.tv_sec = 0;
-    timer.it_interval.tv_usec = quantum_usecs;
-
-    // Start a virtual timer. It counts down whenever this process is executing.
-    if (setitimer (ITIMER_VIRTUAL, &timer, nullptr)) {
-        std::cerr << ERR_SYS_CALL << "Setting the virtual timer has failed.\n";
-        return -1;
-    }
-    return 0;
-}
-
-/**
- * Mask the timer signal.
- * @return 0 on success, -1 on failure.
- */
-int mask(){
-//    cerr << "mask\n";
-    if (sigprocmask(SIG_BLOCK, &blockSet, nullptr)){
-        std::cerr << ERR_SYS_CALL << "Masking failed.\n";
-        return -1;
-    }
-    return 0;
-}
-
-/**
- * Release blocked signals.
- * @return 0 on success, -1 on failure.
- */
-int unMask(){
-//    cerr << "unMask\n";
-    if (sigprocmask(SIG_UNBLOCK, &blockSet,  nullptr)){
-        std::cerr << ERR_SYS_CALL << "Un-masking failed.\n";
-        return -1;
-    }
-    return 0;
-}
-
-/**
- * Remove thread from the specified buffer by ID.
- * @param buffer
- * @param tid
- */
-void removeFromBuf(std::deque<Thread*>* buffer, int tid)
-{
-//    cerr << "removeFromBuf\n";
-    for (unsigned int idx = 0; idx < buffer->size(); idx++) {
-        if (buffer->at(idx)->getId() == tid) {
-            buffer->erase(buffer->begin() + idx);
-            //cerr << "buffer size is: " << buffer->size() << "\n";
-        }
-    }
-}
-
-/**
- * Upon termination of a thread, informs all the threads that are synced to it.
- * @param tid
- */
-void informDependents(int terminatedId)
-{
-//    cerr << "informDependents\n";
-    Thread* dependent;
-    for (int i = 0; i < buf[terminatedId]->getDependentsNum(); i++) {
-        dependent = buf[terminatedId]->popDependent();
-        if (!(dependent->getBlockedNoSync())){
-            dependent->setStatus(READY);
-            readyBuf.push_back(dependent);
-            dependent->setSynced(false);
-        }
-    }
-}
-
-
-// ---------------------------- library methods --------------------------------
 
 /*
  * Description: This function initializes the thread library.
@@ -262,41 +20,7 @@ void informDependents(int terminatedId)
  * function with non-positive quantum_usecs.
  * Return value: On success, return 0. On failure, return -1.
 */
-int uthread_init(int quantum_usecs)
-{
-//    cerr << "uthread_init\n";
-    if (quantum_usecs <= 0) {
-        std::cerr << ERR_FUNC_FAIL << "invalid quantum len was supplied.\n";
-        return -1;
-    }
-    // initialize variables and create an object from the main thread:
-//    if (initBuffer() < 0) {
-//        sigprocmask(SIG_SETMASK, &oldSet,  nullptr);
-//        return -1;
-//    }
-    buf[0] = new Thread(0, nullptr, STACK_SIZE);
-    leakage_count++;
-    buf[0]->setStatus(RUNNING);
-    //readyBuf.push_back(buf[0]); //todo: Is that needed?
-    numThreads = 1;
-    currentThreadId = 0;
-    totalQuantumNum = 1; // "Right after the call to uthread_init, the value should be 1."
-
-    //init masking-signals buffers:
-    if (sigemptyset(&blockSet) || sigaddset(&blockSet, SIGVTALRM))
-    {
-        std::cerr << ERR_SYS_CALL << "Signals buffer action has failed.\n";
-        unMask();
-        return -1;
-    }
-
-    // set timer:
-    if (setTimer(quantum_usecs) < 0) {
-        std::cerr << ERR_SYS_CALL << "Timer initialization failed" << std::endl;
-        return -1;
-    }
-    return 0;
-}
+int uthread_init(int quantum_usecs);
 
 /*
  * Description: This function creates a new thread, whose entry point is the
@@ -308,45 +32,7 @@ int uthread_init(int quantum_usecs)
  * Return value: On success, return the ID of the created thread.
  * On failure, return -1.
 */
-int uthread_spawn(void (*f)(void))
-{
-//    cerr << "uthread_spawn\n";
-    int tid = -1;
-    if (numThreads < MAX_THREAD_NUM)
-    {
-        if (mask()){
-            return -1;
-        }
-        //assign id
-        for (int i=1; i<MAX_THREAD_NUM; i++)
-        {
-            if (buf[i] == nullptr)
-            {
-                tid = i;
-                break;
-            }
-        }
-
-        //f points to the starting point - pc - of the thread
-        auto t = new Thread(tid, f, STACK_SIZE);
-        leakage_count++; //todo: REMOVE
-        readyBuf.push_back(t); // not necessarily at tid - order of ready
-        buf[tid] = t; // inserts thread in the minimal open tid, not end of line
-        numThreads++;
-        if (unMask()){
-            return -1;
-        }
-    }
-
-    // error handling
-    if (tid == -1){
-        std::cerr << ERR_FUNC_FAIL << "Number of threads exceeds limit.\n";
-    }
-//    cerr << "spawned: " << tid << "\n";
-    return tid;
-
-}
-
+int uthread_spawn(void (*f)(void));
 
 
 /*
@@ -360,61 +46,7 @@ int uthread_spawn(void (*f)(void))
  * terminated and -1 otherwise. If a thread terminates itself or the main
  * thread is terminated, the function does not return.
 */
-int uthread_terminate(int tid)  //todo: block signals
-{
-//    cerr << "uthread_terminate\n";
-    // check validity of input:
-    if (_idValidator(tid) || mask()) {
-        return -1;
-    }
-    // terminated thread != main thread:
-    if (tid) {
-        bool callScheduler = false;
-        // inform all depending threads:
-        informDependents(tid);
-        // pop out of ready list:
-        if (buf[tid]->getStatus() == READY) {
-            removeFromBuf(&readyBuf, tid);
-        }
-            // if the thread terminates itself, a scheduling decision has to be made:
-        else if (buf[tid]->getStatus() == RUNNING) {
-            callScheduler = true;
-        }
-        // delete thread:
-        delete buf[tid];
-        buf[tid] = nullptr;
-        leakage_count--; //todo: REMOVE
-        numThreads--;
-        if (callScheduler){
-            isReady = false;
-            timeHandler(BLOCKED);
-        }
-        if (unMask()){
-            return -1;
-        }
-        return 0;
-    }
-        // terminate the main thread:
-    else {
-        for (Thread* thread: buf) {
-            if (thread){
-                delete(thread);
-                leakage_count--;
-            }
-        }
-        vector<Thread*> dummy_1;
-        deque<Thread*> dummy_2;
-        buf.swap(dummy_1);
-        readyBuf.swap(dummy_2);
-
-//        std::cerr << "leakage counter: " << leakage_count << std::endl; //todo: REMOVE
-
-        if (unMask()){
-            exit(-1);
-        }
-        exit(0);
-    }
-}
+int uthread_terminate(int tid);
 
 
 /*
@@ -426,35 +58,7 @@ int uthread_terminate(int tid)  //todo: block signals
  * effect and is not considered an error.
  * Return value: On success, return 0. On failure, return -1.
 */
-int uthread_block(int tid)
-{
-//    cerr << "uthread_block\n";
-    // check id validity and mask:
-    if (tid == 0 || _idValidator(tid)==-1){
-        std::cerr << ERR_FUNC_FAIL << "Invalid tid to block.\n";
-        return -1;
-    }
-    if (mask()) {
-        return -1;
-    }
-    // remove from ready:
-    if (buf[tid]->getStatus() == READY) {
-        removeFromBuf(&readyBuf, tid);
-    }
-    // set state
-    buf[tid]->setStatus(BLOCKED);
-    buf[tid]->setBlockedNoSync(true);
-    // a thread blocks itself - call scheduler
-    if (tid == uthread_get_tid()) {
-        scheduler(BLOCKED);
-    }
-    buf.at(tid)->setBlockedNoSync(true); //raise blocked but not synced flag.
-
-    if (unMask()){
-        return -1;
-    }
-    return 0;
-}
+int uthread_block(int tid);
 
 
 /*
@@ -464,31 +68,7 @@ int uthread_block(int tid)
  * ID tid exists it is considered an error.
  * Return value: On success, return 0. On failure, return -1.
 */
-int uthread_resume(int tid)
-{
-//    cerr << "uthread_resume\n";
-    if (_idValidator(tid)==-1){
-        std::cerr << ERR_FUNC_FAIL << "Invalid tid to resume.\n";
-        return -1;
-    }
-    if (mask()) {
-        return -1;
-    }
-    // make sure thread is not active to begin with:
-    if (!(buf[tid]->getStatus() == RUNNING || buf[tid]->getStatus() == READY)){
-        if (!buf[tid]->isSynced()) //assure thread is not synced (and therefor shouldn't be resumed)
-        {
-            buf[tid]->setStatus(READY);
-            readyBuf.push_back(buf[tid]);
-            buf[tid]->setBlockedNoSync(false);
-        }
-
-    }
-    if (unMask()){
-        return -1;
-    }
-    return 0;
-}
+int uthread_resume(int tid);
 
 
 /*
@@ -498,45 +78,14 @@ int uthread_resume(int tid)
  * RUNNING thread transitions to the BLOCKED state a scheduling decision should be made.
  * Return value: On success, return 0. On failure, return -1.
 */
-int uthread_sync(int tid)
-{
-//    cerr << "uthread_sync\n";
-    // the running thread is calling this func - currentThreadId
-
-    if (_idValidator(tid) || tid == 0 || uthread_get_tid() == tid || mask())
-    {
-        std::cerr << ERR_FUNC_FAIL << "Invalid input.\n";
-        return -1;
-    }
-
-    // block current thread
-    buf.at(uthread_get_tid())->setStatus(BLOCKED);
-    isReady = false;
-
-    // current thread should wait until tid finishes its job
-    buf.at(tid)->pushDependent(buf.at(uthread_get_tid()));
-    buf.at(uthread_get_tid())->setSynced(true); //raise synced flag
-
-    // RUNNING thread transitions to the BLOCKED state
-    //scheduling decision should be made
-    scheduler(BLOCKED);
-
-    if (unMask()){
-        return -1;
-    }
-    return 0;
-}
+int uthread_sync(int tid);
 
 
 /*
  * Description: This function returns the thread ID of the calling thread.
  * Return value: The ID of the calling thread.
 */
-int uthread_get_tid()
-{
-//    cerr << "uthread_get_tid\n";
-    return currentThreadId;
-}
+int uthread_get_tid();
 
 
 /*
@@ -547,11 +96,7 @@ int uthread_get_tid()
  * should be increased by 1.
  * Return value: The total number of quantums.
 */
-int uthread_get_total_quantums()
-{
-//    cerr << "uthread_get_total_quantums\n";
-    return totalQuantumNum;
-}
+int uthread_get_total_quantums();
 
 
 /*
@@ -564,11 +109,6 @@ int uthread_get_total_quantums()
  * Return value: On success, return the number of quantums of the thread with ID tid.
  * 			     On failure, return -1.
 */
-int uthread_get_quantums(int tid)
-{
-//    cerr << "uthread_get_quantums\n";
-    if (_idValidator(tid)){
-        return -1;
-    }
-    return buf[tid]->getNumQuantums();
-}
+int uthread_get_quantums(int tid);
+
+#endif
