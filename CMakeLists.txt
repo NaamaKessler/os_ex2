@@ -3,5 +3,5 @@ project(os_ex2)
 
 set(CMAKE_CXX_STANDARD 11)
 
-set(SOURCE_FILES main.cpp uthreads.h uthreads.cpp Thread.h Thread.cpp)
+set(SOURCE_FILES uthreads.h uthreads.cpp Thread.h Thread.cpp test14.cpp)
 add_executable(os_ex2 ${SOURCE_FILES})
