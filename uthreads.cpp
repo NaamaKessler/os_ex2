@@ -187,6 +187,7 @@ int initBuffer() {
  * Sets a virtual timer with the time interval quantum_usecs.
  */
 int setTimer(int quantum_usecs) {
+    // todo: handle input if > 1000000: should be 1 in tv_sec (tip from whatsapp)
     cout << "setTimer\n";
     //set timer handler:
 //    sa.sa_handler = &scheduler;
