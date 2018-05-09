@@ -1,4 +1,0 @@
-/usr/local/jetbrains/clion-2017.2.2/bin/cmake/bin/cmake -DCMAKE_BUILD_TYPE=Debug -G "CodeBlocks - Unix Makefiles" /cs/usr/naamakessler/Documents/OS/os_ex2
--- Configuring done
--- Generating done
--- Build files have been written to: /cs/usr/naamakessler/Documents/OS/os_ex2/cmake-build-debug
