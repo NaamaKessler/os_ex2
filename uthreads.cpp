@@ -75,7 +75,7 @@ int _idValidator(int tid)
  * @param sig
  */
 void timeHandler(int sig){ //todo: changed return type to int
-    totalQuantumNum++;
+
 
     if (mask()){
         // error
@@ -91,10 +91,10 @@ void timeHandler(int sig){ //todo: changed return type to int
     isReady = true;
 
     // reset timer:
-    buf[currentThreadId]->increaseNumQuantums();
-    if (setitimer (ITIMER_VIRTUAL, &timer, nullptr)) {
-        std::cerr << ERR_SYS_CALL << "Resetting the virtual timer has failed.\n";
-    }
+//    buf[currentThreadId]->increaseNumQuantums();
+//    if (setitimer (ITIMER_VIRTUAL, &timer, nullptr)) {
+//        std::cerr << ERR_SYS_CALL << "Resetting the virtual timer has failed.\n";
+//    }
 
     if (unMask()){
         //error
@@ -116,6 +116,11 @@ void scheduler(int state){
 
     if (readyBuf.size() == 0)
     {
+        if (setitimer (ITIMER_VIRTUAL, &timer, nullptr)) {
+            std::cerr << ERR_SYS_CALL << "Resetting the virtual timer has failed.\n";
+        }
+        buf[currentThreadId]->increaseNumQuantums();
+        totalQuantumNum++;
         // main thread is running - do nothing
         return;
     } else {
@@ -141,6 +146,11 @@ void scheduler(int state){
             contextSwitch(oldID);
         }
         else {
+            buf[currentThreadId]->increaseNumQuantums();
+            if (setitimer (ITIMER_VIRTUAL, &timer, nullptr)) {
+                std::cerr << ERR_SYS_CALL << "Resetting the virtual timer has failed.\n";
+            }
+            totalQuantumNum++;
             siglongjmp(*(buf[uthread_get_tid()]->getEnvironment()), AFTER_JUMP);
         }
     }
@@ -153,6 +163,11 @@ void contextSwitch(int tid){
     if (ret_val == AFTER_JUMP) {
         return;
     }
+    buf[currentThreadId]->increaseNumQuantums();
+    if (setitimer (ITIMER_VIRTUAL, &timer, nullptr)) {
+        std::cerr << ERR_SYS_CALL << "Resetting the virtual timer has failed.\n";
+    }
+    totalQuantumNum++;
 
     // load environment:
     siglongjmp(*(buf[uthread_get_tid()]->getEnvironment()),AFTER_JUMP);
@@ -171,12 +186,12 @@ int setTimer(int quantum_usecs) {
         return -1;
     }
     // Configure the timer to expire after quantum micro secs:
-    timer.it_value.tv_sec = 0;
-    timer.it_value.tv_usec = quantum_usecs;
+    timer.it_value.tv_sec = quantum_usecs / 1000000;
+    timer.it_value.tv_usec = quantum_usecs % 1000000;
 
     // configure the timer to expire every quantum micro secs after that:
-    timer.it_interval.tv_sec = 0;
-    timer.it_interval.tv_usec = quantum_usecs;
+    timer.it_interval.tv_sec = quantum_usecs / 1000000;
+    timer.it_interval.tv_usec = quantum_usecs % 1000000;
 
     // Start a virtual timer. It counts down whenever this process is executing.
     if (setitimer (ITIMER_VIRTUAL, &timer, nullptr)) {
@@ -260,6 +275,7 @@ int uthread_init(int quantum_usecs)
         return -1;
     }
     buf[0] = new Thread(0, nullptr, STACK_SIZE);
+
     leakage_count++;
     buf[0]->setStatus(RUNNING);
     numThreads = 1;
@@ -270,7 +286,7 @@ int uthread_init(int quantum_usecs)
     if (sigemptyset(&blockSet) || sigaddset(&blockSet, SIGVTALRM))
     {
         std::cerr << ERR_SYS_CALL << "Signals buffer action has failed.\n";
-        unMask();
+//        unMask();
         return -1;
     }
 
@@ -279,6 +295,8 @@ int uthread_init(int quantum_usecs)
         std::cerr << ERR_SYS_CALL << "Timer initialization failed" << std::endl;
         return -1;
     }
+    buf[currentThreadId]->increaseNumQuantums();
+
     return 0;
 }
 
@@ -323,7 +341,7 @@ int uthread_spawn(void (*f)(void))
 
     // error handling:
     if (tid == -1){
-        std::cerr << ERR_FUNC_FAIL << "Number of threads exceeds limit.\n";
+        std::cout<< ERR_FUNC_FAIL << "Number of threads exceeds limit.\n";
     }
     return tid;
 
@@ -345,7 +363,11 @@ int uthread_spawn(void (*f)(void))
 int uthread_terminate(int tid)
 {
     // check validity of input:
-    if (_idValidator(tid) || mask()) {
+    if (mask())
+    {
+        return -1;
+    }
+    if (_idValidator(tid)) {
         return -1;
     }
     // terminated thread != main thread:
@@ -478,12 +500,16 @@ int uthread_resume(int tid)
 */
 int uthread_sync(int tid)
 {
-    if (_idValidator(tid) || tid == 0 || uthread_get_tid() == tid || mask())
+    if (_idValidator(tid) || tid == 0 || uthread_get_tid() == tid)
     {
         std::cerr << ERR_FUNC_FAIL << "Invalid input.\n";
         return -1;
     }
 
+    if (mask())
+    {
+        return -1;
+    }
     // block current thread
     buf.at(uthread_get_tid())->setStatus(BLOCKED);
     isReady = false;

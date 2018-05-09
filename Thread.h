@@ -120,7 +120,7 @@ public:
     bool isSynced();
 
 private:
-    int _tid, _status, _numQuantums;;
+    int _tid, _status, _numQuantums;
     bool _isSynced, _blockedNoSync;
     char _stack[STACK_SIZE];
     queue<Thread*> _dependencyQueue;

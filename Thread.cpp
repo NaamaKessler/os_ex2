@@ -117,9 +117,9 @@ int Thread::setStatus(int status)
     if (status == READY || status == RUNNING || status == BLOCKED)
     {
         this->_status = status;
-        if (status == RUNNING) {
-            this->_numQuantums++;
-        }
+//        if (status == RUNNING) {
+//            this->_numQuantums++;
+//        }
         return 0;
     }
     return -1;
@@ -196,6 +196,7 @@ int Thread::getNumQuantums()
 */
 void Thread::increaseNumQuantums()
 {
+//    cerr << "THREAD "<< this->_tid << " QUANTUMS: " << _numQuantums << endl;
     _numQuantums++;
 }
 
