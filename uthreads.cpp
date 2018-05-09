@@ -130,11 +130,16 @@ void scheduler(int state){
         return;
     } else {
         // move old running thread to readybuf, READY state
-        if (buf.at(uthread_get_tid())->getStatus() == RUNNING){
-            readyBuf.push_back(buf[uthread_get_tid()]);
+        if (currentThreadId != -1){
+            if (buf.at(uthread_get_tid())->getStatus() == RUNNING){
+                readyBuf.push_back(buf[uthread_get_tid()]);
+            }
+            buf[uthread_get_tid()]->setStatus(state);
+            oldID = uthread_get_tid();
         }
-        buf[uthread_get_tid()]->setStatus(state);
-        oldID = uthread_get_tid();
+        else {
+            oldID = -1;
+        }
 
         // pop new running thread from ready to running
         runningThread = readyBuf.front();
@@ -143,7 +148,12 @@ void scheduler(int state){
         currentThreadId = runningThread->getId();
 //        cerr << "current thread: " << currentThreadId << "\n";
         //contextSwitch(runningThread->getId());
-        contextSwitch(oldID);
+        if (oldID != -1) {
+            contextSwitch(oldID);
+        }
+        else {
+            siglongjmp(*(buf[uthread_get_tid()]->getEnvironment()), AFTER_JUMP);
+        }
     }
 //    cerr << "finished scheduler \n";
 }
@@ -387,6 +397,7 @@ int uthread_terminate(int tid)  //todo: block signals
         numThreads--;
         if (callScheduler){
             isReady = false;
+            currentThreadId = -1;
             timeHandler(BLOCKED);
         }
         if (unMask()){

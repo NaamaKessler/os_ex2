@@ -7,6 +7,8 @@
 // ------------------------------ includes ------------------------------
 #include "Thread.h"
 
+#define STACK_SIZE 4096
+
 // from demo:
 #ifdef __x86_64__
 /* code for 64 bit Intel arch */
@@ -63,7 +65,8 @@ Thread::Thread(int tid, void (*f)(void), int stackSize)
     this->_tid = tid;
     this->_dependencyQueue =*(new std::queue<Thread*>);
     this->_status = READY;
-    this->_stack = new char[stackSize];
+//    this->_stack = new char[STACK_SIZE];
+//    this->_stack = new char[STACK_SIZE];
     this->_numQuantums = 0;
     sp = (address_t)this->_stack + stackSize - sizeof(address_t);
     pc = (address_t)f;
@@ -78,7 +81,7 @@ Thread::Thread(int tid, void (*f)(void), int stackSize)
  */
 Thread::~Thread()
 {
-    free(this->_stack);
+//    free(this->_stack);
 }
 
 void Thread::setBlockedNoSync(bool flag)

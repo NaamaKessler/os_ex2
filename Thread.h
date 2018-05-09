@@ -8,7 +8,7 @@
 
 #ifndef EX2_THREAD_H
 #define EX2_THREAD_H
-
+#define STACK_SIZE 4096
 #include <iostream>
 #include <queue>
 #include <csetjmp>
@@ -103,7 +103,8 @@ private:
     int _tid;
     bool _isSynced, _blockedNoSync;
     int _status, _numQuantums;
-    char* _stack;
+    char _stack[STACK_SIZE];
+
     queue<Thread*> _dependencyQueue;
     sigjmp_buf _contextBuf;
 
