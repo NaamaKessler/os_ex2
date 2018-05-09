@@ -21,10 +21,11 @@
 
 //todo:
 // timeHandler return value-?
-// large quantum input
 // check leakage
-// new tests from Shiri
-
+// errors - doubles, better messages (test 3)
+// sys calls
+// timer func - increase quantums & set timer
+//
 
 // ------------------------------- globals ------------------------------
 
