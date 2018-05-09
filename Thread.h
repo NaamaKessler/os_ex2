@@ -19,8 +19,6 @@
 #define RUNNING 2
 #define BLOCKED 3
 
-//#define STACK_SIZE 4096
-
 // ------------------------------- methods ------------------------------
 using namespace std;
 typedef unsigned long address_t;
@@ -89,26 +87,45 @@ public:
      */
     int getNumQuantums();
 
+    /**
+     * Increase by 1 the counter of num of quantums the thread was running.
+     */
     void increaseNumQuantums();
 
+    /**
+     * Raise a flag to indicate whether thread was blocked by teminate(),
+     * but was not synced to another thread.
+     * @param flag
+     */
     void setBlockedNoSync(bool flag);
 
+    /**
+     * return the flag indicating whether thread was blocked by teminate(),
+     * but was not synced to another thread.
+     * @return
+     */
     bool getBlockedNoSync();
 
+    /**
+     * Raise a flag to indicate whether the thread was synced to another thread.
+     * @param flag
+     */
     void setSynced(bool flag);
 
+    /**
+     * Return the flag which indicates whether the thread was synced to another
+     * thread.
+     * @return
+     */
     bool isSynced();
 
 private:
-    int _tid;
+    int _tid, _status, _numQuantums;;
     bool _isSynced, _blockedNoSync;
-    int _status, _numQuantums;
     char _stack[STACK_SIZE];
-
     queue<Thread*> _dependencyQueue;
     sigjmp_buf _contextBuf;
 
 };
-
 
 #endif //EX2_THREAD_H

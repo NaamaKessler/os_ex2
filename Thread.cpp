@@ -84,6 +84,11 @@ Thread::~Thread()
 //    free(this->_stack);
 }
 
+/**
+ * Raise a flag to indicate that whether the thread was blocked by teminate(),
+ * but was not synced to another thread.
+ * @param flag
+ */
 void Thread::setBlockedNoSync(bool flag)
 {
     this->_blockedNoSync = flag;
@@ -186,11 +191,18 @@ int Thread::getNumQuantums()
     return this->_numQuantums;
 }
 
+/**
+* Increase by 1 the counter of num of quantums the thread was running.
+*/
 void Thread::increaseNumQuantums()
 {
     _numQuantums++;
 }
 
+/**
+ * Raise a flag to indicate whether the thread was synced to another thread.
+ * @param flag
+ */
 void Thread::setSynced(bool flag)
 {
     this->_isSynced = flag;
