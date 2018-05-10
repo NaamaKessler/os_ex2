@@ -23,7 +23,6 @@
 // timeHandler return value-?
 // check leakage
 // sys calls
-// timer func - increase quantums & set timer
 //
 
 // ------------------------------- globals ------------------------------
@@ -44,7 +43,7 @@ int leakage_count = 0;//todo: REMOVE
 // -------------------------- inner funcs ------------------------------
 
 // declarations so we can keep up with our funcs
-int _idValidator(int tid);
+int idValidator(int tid);
 void timeHandler(int sig);
 void scheduler(int sig);
 void contextSwitch(int tid);
@@ -53,25 +52,32 @@ void removeFromBuf(std::deque<Thread*> * buffer, int tid);
 void informDependents(int tid);
 int mask();
 int unMask();
+int resetTimer();
 
 // ---------------------------- helper methods --------------------------------
 
+/**
+ * Resets the timer, and updates total quantums and quantums per current
+ * thread.
+ * @return 0 on success, -1 on failure.
+ */
 int resetTimer()
 {
     buf[currentThreadId]->increaseNumQuantums();
     if (setitimer (ITIMER_VIRTUAL, &timer, nullptr)) {
         std::cerr << ERR_SYS_CALL << "Resetting the virtual timer has failed.\n";
+        return -1;
     }
     totalQuantumNum++;
+    return 0;
 }
 
 /**
  * check validity of tid.
  */
-int _idValidator(int tid)
+int idValidator(int tid)
 {
     if (tid < 0 || tid > MAX_THREAD_NUM || !buf[tid]) {
-//        std::cerr << ERR_FUNC_FAIL << "Invalid input: ID out of range.\n";
         return -1;
     }
     return 0;
@@ -83,8 +89,7 @@ int _idValidator(int tid)
  * calls Scheduler (handles buf & states), that calls contextSwitch (handles env)
  * @param sig
  */
-void timeHandler(int sig){ //todo: changed return type to int
-
+void timeHandler(int sig){
 
     if (mask()){
         // error
@@ -92,18 +97,11 @@ void timeHandler(int sig){ //todo: changed return type to int
     }
 
     if (isReady){
-        // isReady = should curr thread be inserted back to readyBuf?
         scheduler(READY);
     } else {
         scheduler(BLOCKED);
     }
     isReady = true;
-
-    // reset timer:
-//    buf[currentThreadId]->increaseNumQuantums();
-//    if (setitimer (ITIMER_VIRTUAL, &timer, nullptr)) {
-//        std::cerr << ERR_SYS_CALL << "Resetting the virtual timer has failed.\n";
-//    }
 
     if (unMask()){
         //error
@@ -141,7 +139,7 @@ void scheduler(int state){
             oldID = -1;
         }
 
-        // pop new running thread from ready to running"
+        // pop new running thread from ready to running
         runningThread = readyBuf.front();
         readyBuf.pop_front(); // pop just deletes the element
         runningThread->setStatus(RUNNING);
@@ -173,12 +171,10 @@ void contextSwitch(int tid){
  * Sets a virtual timer with the time interval quantum_usecs.
  */
 int setTimer(int quantum_usecs) {
-    // todo: handle input if > 1000000: should be 1 in tv_sec (tip from whatsapp)
-
     //set timer handler:
     sa.sa_handler = &timeHandler;
     if (sigaction(SIGVTALRM, &sa, nullptr) < 0) {
-        std::cerr << ERR_SYS_CALL << "sigaction has failed.\n";     //todo: change.
+        std::cerr << ERR_SYS_CALL << "sigaction has failed.\n";
         return -1;
     }
     // Configure the timer to expire after quantum micro secs:
@@ -231,7 +227,6 @@ void removeFromBuf(std::deque<Thread*>* buffer, int tid)
     for (unsigned int idx = 0; idx < buffer->size(); idx++) {
         if (buffer->at(idx)->getId() == tid) {
             buffer->erase(buffer->begin() + idx);
-            //cerr << "buffer size is: " << buffer->size() << "\n";
         }
     }
 }
@@ -282,7 +277,6 @@ int uthread_init(int quantum_usecs)
     if (sigemptyset(&blockSet) || sigaddset(&blockSet, SIGVTALRM))
     {
         std::cerr << ERR_SYS_CALL << "Signals buffer action has failed.\n";
-//        unMask();
         return -1;
     }
 
@@ -363,7 +357,7 @@ int uthread_terminate(int tid)
     {
         return -1;
     }
-    if (_idValidator(tid)) {
+    if (idValidator(tid)) {
         std::cerr << ERR_FUNC_FAIL << "Invalid ID to terminate: ID out of range"
                 ".\n";
         return -1;
@@ -429,7 +423,7 @@ int uthread_terminate(int tid)
 int uthread_block(int tid)
 {
     // check id validity and mask:
-    if (tid == 0 || _idValidator(tid)==-1){
+    if (tid == 0 || idValidator(tid)==-1){
         std::cerr << ERR_FUNC_FAIL << "Invalid ID to block: ID out of range"
                 ".\n";
         return -1;
@@ -466,7 +460,7 @@ int uthread_block(int tid)
 */
 int uthread_resume(int tid)
 {
-    if (_idValidator(tid)==-1){
+    if (idValidator(tid)==-1){
         std::cerr << ERR_FUNC_FAIL << "Invalid ID to resume: ID out of range"
                 ".\n";
         return -1;
@@ -500,7 +494,7 @@ int uthread_resume(int tid)
 */
 int uthread_sync(int tid)
 {
-    if (_idValidator(tid) || tid == 0)
+    if (idValidator(tid) || tid == 0)
     {
         std::cerr << ERR_FUNC_FAIL << "Invalid ID to sync: ID out of range.\n";
         return -1;
@@ -571,7 +565,7 @@ int uthread_get_total_quantums()
 */
 int uthread_get_quantums(int tid)
 {
-    if (_idValidator(tid)){
+    if (idValidator(tid)){
         std::cerr << ERR_FUNC_FAIL << "Thread doesn't exist.\n";
         return -1;
     }
