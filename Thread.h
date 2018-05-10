@@ -34,11 +34,6 @@ public:
     Thread(int tid, void (*f)(void), int stackSize);
 
     /**
-     * Destructor.
-     */
-    ~Thread();
-
-    /**
      * @return Thread ID
      */
     int getId();
@@ -60,19 +55,15 @@ public:
     */
     sigjmp_buf* getEnvironment();
 
-    queue<Thread*> * getDependencies();
-
     /**
-     *
+     * Pushes dependent.
      * @param thread
-     * @return
      */
     void pushDependent(Thread *thread);
 
     /**
-     *
+     * Pops dependent.
      * @param thread
-     * @return
      */
     Thread* popDependent();
 

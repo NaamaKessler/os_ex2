@@ -65,8 +65,6 @@ Thread::Thread(int tid, void (*f)(void), int stackSize)
     this->_tid = tid;
     this->_dependencyQueue =*(new std::queue<Thread*>);
     this->_status = READY;
-//    this->_stack = new char[STACK_SIZE];
-//    this->_stack = new char[STACK_SIZE];
     this->_numQuantums = 0;
     sp = (address_t)this->_stack + stackSize - sizeof(address_t);
     pc = (address_t)f;
@@ -74,14 +72,6 @@ Thread::Thread(int tid, void (*f)(void), int stackSize)
     (this->_contextBuf->__jmpbuf)[JB_SP] = translate_address(sp);
     (this->_contextBuf->__jmpbuf)[JB_PC] = translate_address(pc);
     sigemptyset(&_contextBuf->__saved_mask);
-}
-
-/**
- * Destructor.
- */
-Thread::~Thread()
-{
-//    free(this->_stack);
 }
 
 /**
@@ -117,18 +107,9 @@ int Thread::setStatus(int status)
     if (status == READY || status == RUNNING || status == BLOCKED)
     {
         this->_status = status;
-//        if (status == RUNNING) {
-//            this->_numQuantums++;
-//        }
         return 0;
     }
     return -1;
-}
-
-
-queue<Thread*> * Thread::getDependencies()
-{
-    return &(this->_dependencyQueue);
 }
 
 /**
@@ -162,7 +143,7 @@ void Thread::pushDependent(Thread *thread)
  * @param thread
  * @return
  */
-Thread* Thread::popDependent() //todo: I removed the argument since it wasn't being used
+Thread* Thread::popDependent()
 {
     Thread* t = nullptr;
     if (!_dependencyQueue.empty())
@@ -196,7 +177,6 @@ int Thread::getNumQuantums()
 */
 void Thread::increaseNumQuantums()
 {
-//    cerr << "THREAD "<< this->_tid << " QUANTUMS: " << _numQuantums << endl;
     _numQuantums++;
 }
 

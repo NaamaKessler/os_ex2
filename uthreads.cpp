@@ -18,7 +18,6 @@
 #define ERR_SYS_CALL "system error: "
 #define AFTER_JUMP 2
 
-
 //todo:
 // check makefile
 
@@ -106,6 +105,7 @@ int idValidator(int tid)
  * @param sig
  */
 void timeHandler(int sig){
+    sig++; // to avoid compilation warnings
     mask();
     if (isReady){
         scheduler(READY);
@@ -393,6 +393,7 @@ int uthread_terminate(int tid)
     else {
         exitLib(0);
     }
+    return -1; // we are not supposed to get here.
 }
 
 
