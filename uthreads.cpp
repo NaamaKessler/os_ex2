@@ -17,13 +17,10 @@
 #define ERR_FUNC_FAIL "thread library error: "
 #define ERR_SYS_CALL "system error: "
 #define AFTER_JUMP 2
-// NDEBUG //todo: ?
+
 
 //todo:
-// timeHandler return value-?
-// check leakage
-// sys calls
-//
+// check makefile
 
 // ------------------------------- globals ------------------------------
 
@@ -37,9 +34,6 @@ bool isReady = true; // state of the currently running thread , before timeHandl
 struct sigaction sa;
 static struct itimerval timer;
 
-int leakage_count = 0;//todo: REMOVE
-
-
 // -------------------------- inner funcs ------------------------------
 
 // declarations so we can keep up with our funcs
@@ -50,11 +44,33 @@ void contextSwitch(int tid);
 int setTimer(int quantum_usecs);
 void removeFromBuf(std::deque<Thread*> * buffer, int tid);
 void informDependents(int tid);
-int mask();
-int unMask();
+void mask();
+void unMask();
 int resetTimer();
 
 // ---------------------------- helper methods --------------------------------
+
+
+/**
+ * Terminates the main thread and frees the allocated memory of the library.
+ * @param retVal
+ */
+void exitLib(int retVal)
+{
+    sigprocmask(SIG_BLOCK, &blockSet, nullptr);
+    for (Thread* thread: buf) {
+        if (thread){
+            delete(thread);
+        }
+    }
+    vector<Thread*> dummy_1;
+    deque<Thread*> dummy_2;
+    buf.swap(dummy_1);
+    readyBuf.swap(dummy_2);
+
+    exit(retVal);
+    }
+
 
 /**
  * Resets the timer, and updates total quantums and quantums per current
@@ -66,7 +82,7 @@ int resetTimer()
     buf[currentThreadId]->increaseNumQuantums();
     if (setitimer (ITIMER_VIRTUAL, &timer, nullptr)) {
         std::cerr << ERR_SYS_CALL << "Resetting the virtual timer has failed.\n";
-        return -1;
+        exitLib(-1);
     }
     totalQuantumNum++;
     return 0;
@@ -90,23 +106,15 @@ int idValidator(int tid)
  * @param sig
  */
 void timeHandler(int sig){
-
-    if (mask()){
-        // error
-        return;
-    }
-
+    mask();
     if (isReady){
         scheduler(READY);
     } else {
         scheduler(BLOCKED);
     }
     isReady = true;
+    unMask();
 
-    if (unMask()){
-        //error
-        return;
-    }
 }
 
 
@@ -175,7 +183,8 @@ int setTimer(int quantum_usecs) {
     sa.sa_handler = &timeHandler;
     if (sigaction(SIGVTALRM, &sa, nullptr) < 0) {
         std::cerr << ERR_SYS_CALL << "sigaction has failed.\n";
-        return -1;
+        exitLib(-1);
+//        return -1;
     }
     // Configure the timer to expire after quantum micro secs:
     timer.it_value.tv_sec = quantum_usecs / 1000000;
@@ -188,7 +197,8 @@ int setTimer(int quantum_usecs) {
     // Start a virtual timer. It counts down whenever this process is executing.
     if (setitimer (ITIMER_VIRTUAL, &timer, nullptr)) {
         std::cerr << ERR_SYS_CALL << "Setting the virtual timer has failed.\n";
-        return -1;
+//        return -1;
+        exitLib(-1);
     }
     return 0;
 }
@@ -197,24 +207,22 @@ int setTimer(int quantum_usecs) {
  * Mask the timer signal.
  * @return 0 on success, -1 on failure.
  */
-int mask(){
+void mask(){
     if (sigprocmask(SIG_BLOCK, &blockSet, nullptr)){
         std::cerr << ERR_SYS_CALL << "Masking failed.\n";
-        return -1;
+        exitLib(-1);
     }
-    return 0;
 }
 
 /**
  * Release blocked signals.
  * @return 0 on success, -1 on failure.
  */
-int unMask(){
+void unMask(){
     if (sigprocmask(SIG_UNBLOCK, &blockSet,  nullptr)){
         std::cerr << ERR_SYS_CALL << "Un-masking failed.\n";
-        return -1;
+        exitLib(-1);
     }
-    return 0;
 }
 
 /**
@@ -266,27 +274,28 @@ int uthread_init(int quantum_usecs)
         return -1;
     }
     buf[0] = new Thread(0, nullptr, STACK_SIZE);
-
-    leakage_count++;
     buf[0]->setStatus(RUNNING);
     numThreads = 1;
     currentThreadId = 0;
     totalQuantumNum = 1; // "Right after the call to uthread_init, the value should be 1."
 
     //init masking-signals buffers:
-    if (sigemptyset(&blockSet) || sigaddset(&blockSet, SIGVTALRM))
-    {
+    if (sigemptyset(&blockSet)) {
         std::cerr << ERR_SYS_CALL << "Signals buffer action has failed.\n";
-        return -1;
+        exitLib(-1);
+    }
+    if (sigaddset(&blockSet, SIGVTALRM)){
+        std::cerr << ERR_SYS_CALL << "Signals buffer action has failed.\n";
+        exitLib(-1);
     }
 
     // set timer:
     if (setTimer(quantum_usecs) < 0) {
         std::cerr << ERR_SYS_CALL << "Timer initialization failed" << std::endl;
-        return -1;
+//        return -1;
+        exitLib(-1);
     }
     buf[currentThreadId]->increaseNumQuantums();
-
     return 0;
 }
 
@@ -305,9 +314,8 @@ int uthread_spawn(void (*f)(void))
     int tid = -1;
     if (numThreads < MAX_THREAD_NUM)
     {
-        if (mask()){
-            return -1;
-        }
+        mask();
+
         //assign id:
         for (int i=1; i<MAX_THREAD_NUM; i++)
         {
@@ -320,13 +328,10 @@ int uthread_spawn(void (*f)(void))
 
         // initialize the new thread and insert to buffers:
         auto t = new Thread(tid, f, STACK_SIZE);
-        leakage_count++; //todo: REMOVE
         readyBuf.push_back(t);
         buf[tid] = t;
         numThreads++;
-        if (unMask()){
-            return -1;
-        }
+        unMask();
     }
 
     // error handling:
@@ -353,15 +358,12 @@ int uthread_spawn(void (*f)(void))
 int uthread_terminate(int tid)
 {
     // check validity of input:
-    if (mask())
-    {
-        return -1;
-    }
     if (idValidator(tid)) {
         std::cerr << ERR_FUNC_FAIL << "Invalid ID to terminate: ID out of range"
                 ".\n";
         return -1;
     }
+    mask();
     // terminated thread != main thread:
     if (tid) {
         bool callScheduler = false;
@@ -371,42 +373,25 @@ int uthread_terminate(int tid)
         if (buf[tid]->getStatus() == READY) {
             removeFromBuf(&readyBuf, tid);
         }
-            // if the thread terminates itself, a scheduling decision has to be made:
+        // if the thread terminates itself, a scheduling decision has to be made
         else if (buf[tid]->getStatus() == RUNNING) {
             callScheduler = true;
         }
         // delete thread:
         delete buf[tid];
         buf[tid] = nullptr;
-        leakage_count--; //todo: REMOVE
         numThreads--;
         if (callScheduler){
             isReady = false;
             currentThreadId = -1;
             timeHandler(BLOCKED);
         }
-        if (unMask()){
-            return -1;
-        }
+        unMask();
         return 0;
     }
-        // terminate the main thread:
+    // terminate the main thread:
     else {
-        for (Thread* thread: buf) {
-            if (thread){
-                delete(thread);
-                leakage_count--;
-            }
-        }
-        vector<Thread*> dummy_1;
-        deque<Thread*> dummy_2;
-        buf.swap(dummy_1);
-        readyBuf.swap(dummy_2);
-
-        if (unMask()){
-            exit(-1);
-        }
-        exit(0);
+        exitLib(0);
     }
 }
 
@@ -428,9 +413,7 @@ int uthread_block(int tid)
                 ".\n";
         return -1;
     }
-    if (mask()) {
-        return -1;
-    }
+    mask();
     // remove from ready:
     if (buf[tid]->getStatus() == READY) {
         removeFromBuf(&readyBuf, tid);
@@ -444,9 +427,7 @@ int uthread_block(int tid)
     }
     buf.at(tid)->setBlockedNoSync(true); //raise blocked but not synced flag.
 
-    if (unMask()){
-        return -1;
-    }
+    unMask();
     return 0;
 }
 
@@ -465,9 +446,7 @@ int uthread_resume(int tid)
                 ".\n";
         return -1;
     }
-    if (mask()) {
-        return -1;
-    }
+    mask();
     // make sure thread is not active to begin with:
     if (!(buf[tid]->getStatus() == RUNNING || buf[tid]->getStatus() == READY)){
         if (!buf[tid]->isSynced()) //assure thread is not synced (and therefor shouldn't be resumed)
@@ -478,9 +457,7 @@ int uthread_resume(int tid)
         }
 
     }
-    if (unMask()){
-        return -1;
-    }
+    unMask();
     return 0;
 }
 
@@ -505,11 +482,7 @@ int uthread_sync(int tid)
                 ".\n";
         return -1;
     }
-
-    if (mask())
-    {
-        return -1;
-    }
+    mask();
     // block current thread
     buf.at(uthread_get_tid())->setStatus(BLOCKED);
     isReady = false;
@@ -522,9 +495,7 @@ int uthread_sync(int tid)
     //scheduling decision should be made
     scheduler(BLOCKED);
 
-    if (unMask()){
-        return -1;
-    }
+    unMask();
     return 0;
 }
 
