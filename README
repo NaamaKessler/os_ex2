@@ -1,0 +1,45 @@
+sapirely, naamakessler
+Student Sapir Elyovitch (204368518), Student Naama Kessler(311305874)
+EX: 2
+
+FILES:
+Thread.h
+Thread.cpp
+uthreads.cpp 
+README
+Makefile
+
+REMARKS:
+-
+
+ANSWERS:
+
+1. One general use of user level threads is in an application that uses a 
+	server, and requires shared memory between clients. 
+	For example, the app Waze. On one hand, it requires quick switch 
+	between clients, and on the other hand, the geo information that each 
+	client inserts should appear to all clients. 
+
+2. Advantages: 
+ 	* If one tab fails, it won't shut down the rest of the tabs. 
+ 	* Sometimes sharing memory is not the desired behaviour. For example, 
+ 		when opening the same website in two tabs, we wouldn't want the
+ 		activity in one tab to affect the other.
+ 	* Lets the the operating system manage the scheduling of the different
+ 		tabs better, for example, when one tab requires more resources.
+ 		
+	Disadvangatges: 
+	* It takes longer to switch between tabs, because of the overhead. 
+	* It may require more space than threads which share memory. 
+	
+3. The "kill" command, which is inserted by the keyboard, is a wrapper 
+	around the kill() system call. kill() gets the arguments pid and 
+	signal, in this case it sends the shell signal SIGTERM to the 
+	process (pid). The process may declare a handler of its own for the
+	 signal (for example, to do cleanups), or it may use the default OS one. 
+
+4. Real time is the real world time, and one use for it is a stopwatch
+	application. Virtual time is the time in which a certain process 
+	executes on the CPU. One use for it is benchmarks (Performance 
+	measurments). 
+
