@@ -22,7 +22,6 @@
 //todo:
 // timeHandler return value-?
 // check leakage
-// errors - doubles, better messages (test 3)
 // sys calls
 // timer func - increase quantums & set timer
 //
@@ -57,13 +56,22 @@ int unMask();
 
 // ---------------------------- helper methods --------------------------------
 
+int resetTimer()
+{
+    buf[currentThreadId]->increaseNumQuantums();
+    if (setitimer (ITIMER_VIRTUAL, &timer, nullptr)) {
+        std::cerr << ERR_SYS_CALL << "Resetting the virtual timer has failed.\n";
+    }
+    totalQuantumNum++;
+}
+
 /**
  * check validity of tid.
  */
 int _idValidator(int tid)
 {
     if (tid < 0 || tid > MAX_THREAD_NUM || !buf[tid]) {
-        std::cerr << ERR_FUNC_FAIL << "Invalid input.\n";
+//        std::cerr << ERR_FUNC_FAIL << "Invalid input: ID out of range.\n";
         return -1;
     }
     return 0;
@@ -117,11 +125,7 @@ void scheduler(int state){
 
     if (readyBuf.size() == 0)
     {
-        if (setitimer (ITIMER_VIRTUAL, &timer, nullptr)) {
-            std::cerr << ERR_SYS_CALL << "Resetting the virtual timer has failed.\n";
-        }
-        buf[currentThreadId]->increaseNumQuantums();
-        totalQuantumNum++;
+        resetTimer();
         // main thread is running - do nothing
         return;
     } else {
@@ -147,11 +151,7 @@ void scheduler(int state){
             contextSwitch(oldID);
         }
         else {
-            buf[currentThreadId]->increaseNumQuantums();
-            if (setitimer (ITIMER_VIRTUAL, &timer, nullptr)) {
-                std::cerr << ERR_SYS_CALL << "Resetting the virtual timer has failed.\n";
-            }
-            totalQuantumNum++;
+            resetTimer();
             siglongjmp(*(buf[uthread_get_tid()]->getEnvironment()), AFTER_JUMP);
         }
     }
@@ -164,12 +164,7 @@ void contextSwitch(int tid){
     if (ret_val == AFTER_JUMP) {
         return;
     }
-    buf[currentThreadId]->increaseNumQuantums();
-    if (setitimer (ITIMER_VIRTUAL, &timer, nullptr)) {
-        std::cerr << ERR_SYS_CALL << "Resetting the virtual timer has failed.\n";
-    }
-    totalQuantumNum++;
-
+    resetTimer();
     // load environment:
     siglongjmp(*(buf[uthread_get_tid()]->getEnvironment()),AFTER_JUMP);
 }
@@ -369,6 +364,8 @@ int uthread_terminate(int tid)
         return -1;
     }
     if (_idValidator(tid)) {
+        std::cerr << ERR_FUNC_FAIL << "Invalid ID to terminate: ID out of range"
+                ".\n";
         return -1;
     }
     // terminated thread != main thread:
@@ -433,7 +430,8 @@ int uthread_block(int tid)
 {
     // check id validity and mask:
     if (tid == 0 || _idValidator(tid)==-1){
-        std::cerr << ERR_FUNC_FAIL << "Invalid tid to block.\n";
+        std::cerr << ERR_FUNC_FAIL << "Invalid ID to block: ID out of range"
+                ".\n";
         return -1;
     }
     if (mask()) {
@@ -469,7 +467,8 @@ int uthread_block(int tid)
 int uthread_resume(int tid)
 {
     if (_idValidator(tid)==-1){
-        std::cerr << ERR_FUNC_FAIL << "Invalid tid to resume.\n";
+        std::cerr << ERR_FUNC_FAIL << "Invalid ID to resume: ID out of range"
+                ".\n";
         return -1;
     }
     if (mask()) {
@@ -501,9 +500,15 @@ int uthread_resume(int tid)
 */
 int uthread_sync(int tid)
 {
-    if (_idValidator(tid) || tid == 0 || uthread_get_tid() == tid)
+    if (_idValidator(tid) || tid == 0)
     {
-        std::cerr << ERR_FUNC_FAIL << "Invalid input.\n";
+        std::cerr << ERR_FUNC_FAIL << "Invalid ID to sync: ID out of range.\n";
+        return -1;
+    }
+    if (uthread_get_tid() == tid)
+    {
+        std::cerr << ERR_FUNC_FAIL << "Invalid ID to sync: Cannot sync itself"
+                ".\n";
         return -1;
     }
 
@@ -567,6 +572,7 @@ int uthread_get_total_quantums()
 int uthread_get_quantums(int tid)
 {
     if (_idValidator(tid)){
+        std::cerr << ERR_FUNC_FAIL << "Thread doesn't exist.\n";
         return -1;
     }
     return buf[tid]->getNumQuantums();
